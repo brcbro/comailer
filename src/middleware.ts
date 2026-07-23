@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth";
 
-export async function proxy(request: NextRequest) {
+export const runtime = "experimental-edge";
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes: tracking pixels/clicks (hit by external mail clients),
