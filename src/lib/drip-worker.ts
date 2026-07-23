@@ -101,6 +101,25 @@ async function processOneDrip(dripId: string) {
   });
 
   if (queue.length === 0) {
+    const [pendingLeft, total] = await Promise.all([
+      prisma.dripRecipient.count({
+        where: { dripCampaignId: drip.id, status: "pending" },
+      }),
+      prisma.dripRecipient.count({ where: { dripCampaignId: drip.id } }),
+    ]);
+
+    // Empty import / failed create — pause instead of falsely "completing".
+    if (total === 0) {
+      await prisma.dripCampaign.update({
+        where: { id: drip.id },
+        data: { status: "paused" },
+      });
+      return;
+    }
+
+    // Still have pending (race) — leave running.
+    if (pendingLeft > 0) return;
+
     await prisma.dripCampaign.update({
       where: { id: drip.id },
       data: { status: "completed" },

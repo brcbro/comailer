@@ -102,14 +102,17 @@ export async function PATCH(
       if (body.status === "running") {
         const denied = await assertOrgCanSend(existing.organizationId);
         if (denied) return denied;
-      }
-      if (existing.status === "completed" && body.status === "running") {
         const pending = await prisma.dripRecipient.count({
           where: { dripCampaignId: id, status: "pending" },
         });
         if (pending === 0) {
           return NextResponse.json(
-            { error: "No pending recipients left — campaign is completed" },
+            {
+              error:
+                existing.status === "completed"
+                  ? "No pending recipients left — campaign is completed"
+                  : "This campaign has no pending recipients. Delete it and create a new one with a recipient list.",
+            },
             { status: 400 }
           );
         }

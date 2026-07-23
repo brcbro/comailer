@@ -161,7 +161,19 @@ export async function POST(request: Request) {
       },
     });
 
-    await insertDripRecipients(campaign.id, list);
+    try {
+      await insertDripRecipients(campaign.id, list);
+      const imported = await prisma.dripRecipient.count({
+        where: { dripCampaignId: campaign.id },
+      });
+      if (imported === 0) {
+        throw new Error("Recipient import saved 0 rows");
+      }
+    } catch (insertErr) {
+      // Avoid orphan campaigns with an empty queue (worker would mark them completed).
+      await prisma.dripCampaign.delete({ where: { id: campaign.id } }).catch(() => {});
+      throw insertErr;
+    }
 
     const full = await prisma.dripCampaign.findUnique({
       where: { id: campaign.id },

@@ -315,6 +315,12 @@ export default function DripPage() {
                     <p className="text-xs text-on-surface-variant font-mono">
                       {c.smtpConfig.name} · from {c.sender.email} · {c.subject}
                     </p>
+                    {c.stats.total === 0 && (
+                      <p className="text-xs text-error font-medium mt-1">
+                        No recipients were imported. Delete this campaign and create a new one
+                        (recipient save failed on an older deploy).
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
