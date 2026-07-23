@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { AppModal } from "@/components/app-modal";
 
 interface Template {
   id: string;
@@ -245,9 +246,12 @@ export default function TemplatesPage() {
       )}
 
       {/* Editor / Live Preview Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl w-full max-w-4xl p-6 space-y-6 shadow-2xl max-h-[90vh] flex flex-col animate-fade-in-up scrollbar-theme">
+      <AppModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        maxWidth="max-w-4xl"
+        panelClassName="p-6 space-y-6 max-h-[min(calc(100vh-4rem),900px)] flex flex-col scrollbar-theme"
+      >
             <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
               <div className="flex items-center gap-4">
                 <h2 className="text-2xl font-headline font-bold text-on-surface">
@@ -415,9 +419,7 @@ export default function TemplatesPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </AppModal>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { AppModal } from "@/components/app-modal";
 
 interface Sender {
   id: string;
@@ -484,9 +485,12 @@ export default function SmtpPage() {
       )}
 
       {/* Add Config Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl w-full max-w-lg p-6 space-y-6 shadow-2xl animate-fade-in-up">
+      <AppModal
+        open={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        maxWidth="max-w-lg"
+        panelClassName="p-6 space-y-6"
+      >
             <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
               <h2 className="text-2xl font-headline font-bold text-on-surface">
                 Add ZeptoMail Connection
@@ -669,14 +673,15 @@ export default function SmtpPage() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </AppModal>
 
       {/* Manage Senders Drawer/Modal */}
-      {activeSenderConfig && (
-        <div className="fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl w-full max-w-md p-6 space-y-6 shadow-2xl animate-fade-in-up">
+      <AppModal
+        open={Boolean(activeSenderConfig)}
+        onClose={() => setActiveSenderConfig(null)}
+        maxWidth="max-w-md"
+        panelClassName="p-6 space-y-6"
+      >
             <div className="flex items-center justify-between border-b border-outline-variant/20 pb-4">
               <div>
                 <h2 className="text-xl font-headline font-bold text-on-surface">Manage Senders</h2>
@@ -764,9 +769,7 @@ export default function SmtpPage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+      </AppModal>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ModalPortal } from "@/components/modal-portal";
+import { AppModal } from "@/components/app-modal";
 import { RecipientImport } from "@/components/recipient-import";
 import { countRecipientsInText } from "@/lib/parse-recipients";
 
@@ -451,19 +451,12 @@ export default function DripPage() {
       )}
 
       {/* Create Modal */}
-      {showCreate && (
-        <ModalPortal>
-          <div className="fixed inset-0 z-[200] overflow-y-auto">
-            <div
-              className="fixed inset-0 bg-[#2e3230]/30 backdrop-blur-[3px]"
-              aria-hidden
-              onClick={() => setShowCreate(false)}
-            />
-            <div className="relative z-[201] flex min-h-full items-center justify-center p-4 sm:p-8">
-              <div
-                className="bg-surface-container-lowest border border-outline-variant/30 rounded-3xl w-full max-w-2xl max-h-[min(calc(100vh-4rem),900px)] flex flex-col shadow-2xl animate-fade-in-up overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-              >
+      <AppModal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        maxWidth="max-w-2xl"
+        panelClassName="max-h-[min(calc(100vh-4rem),900px)] flex flex-col"
+      >
             <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-4 shrink-0">
               <h2 className="text-2xl font-headline font-bold text-on-surface">
                 New Drip Campaign
@@ -657,11 +650,7 @@ export default function DripPage() {
                 </button>
               </div>
             </form>
-              </div>
-            </div>
-          </div>
-        </ModalPortal>
-      )}
+      </AppModal>
     </div>
   );
 }
