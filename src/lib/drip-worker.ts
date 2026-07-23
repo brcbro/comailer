@@ -148,28 +148,26 @@ async function processOneDrip(dripId: string) {
         bodyType: drip.bodyType === "HTML" ? "HTML" : "TEXT",
       });
 
-      await prisma.$transaction([
-        prisma.recipient.update({
-          where: { id: trackedRecipient.id },
-          data: { status: "sent", sentAt: new Date() },
-        }),
-        prisma.dripRecipient.update({
-          where: { id: item.id },
-          data: {
-            status: "sent",
-            sentAt: new Date(),
-            recipientId: trackedRecipient.id,
-            error: null,
-          },
-        }),
-        prisma.dripCampaign.update({
-          where: { id: drip.id },
-          data: {
-            sentToday: { increment: 1 },
-            dayKey: key,
-          },
-        }),
-      ]);
+      await prisma.recipient.update({
+        where: { id: trackedRecipient.id },
+        data: { status: "sent", sentAt: new Date() },
+      });
+      await prisma.dripRecipient.update({
+        where: { id: item.id },
+        data: {
+          status: "sent",
+          sentAt: new Date(),
+          recipientId: trackedRecipient.id,
+          error: null,
+        },
+      });
+      await prisma.dripCampaign.update({
+        where: { id: drip.id },
+        data: {
+          sentToday: { increment: 1 },
+          dayKey: key,
+        },
+      });
 
       sentThisTick++;
     } catch (err: unknown) {

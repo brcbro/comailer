@@ -81,21 +81,28 @@ export async function POST(request: Request) {
 
     const passwordHash = await hashPassword(password);
 
+    // Neon HTTP adapter does not support transactions / nested writes.
     const org = await prisma.organization.create({
       data: {
         name: orgName,
         slug,
         isActive: true,
-        users: {
-          create: {
-            email,
-            name: userName || orgName,
-            passwordHash,
-            role: "CLIENT",
-            isActive: true,
-          },
-        },
       },
+    });
+
+    await prisma.user.create({
+      data: {
+        email,
+        name: userName || orgName,
+        passwordHash,
+        role: "CLIENT",
+        organizationId: org.id,
+        isActive: true,
+      },
+    });
+
+    const full = await prisma.organization.findUnique({
+      where: { id: org.id },
       include: {
         users: {
           select: {
@@ -110,7 +117,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(org, { status: 201 });
+    return NextResponse.json(full, { status: 201 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to create client";
     return NextResponse.json({ error: message }, { status: 500 });
