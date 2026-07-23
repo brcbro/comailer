@@ -7,7 +7,7 @@
     "build": "prisma generate && next build",
     "build:cf": "node scripts/patch-opennext-win.cjs && prisma generate --no-engine && opennextjs-cloudflare build && node scripts/patch-prisma-cf.cjs && node scripts/patch-worker-cron.cjs",
     "deploy:cf": "npm run build:cf && wrangler deploy",
-    "deploy": "npm run deploy:cf",
+    "deploy": "wrangler deploy",
     "db:migrate": "prisma migrate deploy",
     "preview": "opennextjs-cloudflare build && wrangler dev",
     "start": "next start",

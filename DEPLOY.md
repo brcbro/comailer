@@ -9,8 +9,10 @@ Workers URL (fallback): `https://mailer.bhavy.workers.dev`
 ```bash
 npm install
 npm run build:cf    # patches Prisma for Workers + builds OpenNext bundle
-npx wrangler deploy
+npm run deploy      # wrangler deploy only (CI build step already ran build:cf)
 ```
+
+For a full local rebuild + deploy: `npm run deploy:cf`.
 
 `build:cf` runs Windows symlink patch + Prisma Cloudflare patch automatically.
 

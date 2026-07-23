@@ -9,10 +9,6 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  "limits": {
-    // Paid default is 10k; raise for large drip imports + per-minute send ticks.
-    "subrequests": 100000
-  },
   "triggers": {
     "crons": ["* * * * *"]
   },
