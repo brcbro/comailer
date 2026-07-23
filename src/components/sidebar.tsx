@@ -53,10 +53,12 @@ export function Sidebar() {
   return (
     <aside className="h-screen w-72 flex-col fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant/20 p-5 flex space-y-2 z-50 overflow-y-auto scrollbar-theme">
       <div className="px-3 py-4 mb-2 flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-          <span className="material-symbols-outlined text-2xl font-semibold">
-            alternate_email
-          </span>
+        <div className="flex size-10 items-center justify-center rounded-2xl bg-primary/10 overflow-hidden">
+          <img
+            src="/logo.png"
+            alt="Comailer"
+            className="size-7 object-contain"
+          />
         </div>
         <div>
           <h1 className="font-headline font-bold text-2xl text-primary tracking-tight leading-none">
