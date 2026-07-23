@@ -1,4 +1,12 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { Pool, neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
+
+// Use ws in Node.js environments where global WebSocket is not available
+if (typeof window === "undefined" && typeof WebSocket === "undefined") {
+  neonConfig.webSocketConstructor = ws;
+}
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -7,27 +15,17 @@ const globalForPrisma = globalThis as unknown as {
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
 
-  // Cloudflare Edge environment check
   if (
-    typeof process !== "undefined" &&
-    process.env.NEXT_RUNTIME === "edge" &&
-    connectionString
+    connectionString &&
+    (connectionString.startsWith("postgres://") ||
+      connectionString.startsWith("postgresql://"))
   ) {
-    try {
-      const { PrismaNeon } = require("@prisma/adapter-neon");
-      const { Pool } = require("@neondatabase/serverless");
-      const pool = new Pool({ connectionString });
-      const adapter = new PrismaNeon(pool);
-      return new PrismaClient({ adapter });
-    } catch {
-      // Fallback
-    }
+    const pool = new Pool({ connectionString });
+    const adapter = new PrismaNeon(pool);
+    return new PrismaClient({ adapter });
   }
 
-  // Standard Node.js runtime (local dev & serverless Node)
-  return new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-  });
+  return new PrismaClient();
 }
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
