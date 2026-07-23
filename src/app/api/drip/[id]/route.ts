@@ -6,6 +6,7 @@ import {
   resolveOrganizationId,
   tenantErrorResponse,
 } from "@/lib/tenant";
+import { assertOrgCanSend } from "@/lib/assert-org-access";
 
 async function findScopedDrip(id: string, organizationId: string | null) {
   return prisma.dripCampaign.findFirst({
@@ -98,6 +99,10 @@ export async function PATCH(
     }
 
     if (body.status === "running" || body.status === "paused") {
+      if (body.status === "running") {
+        const denied = await assertOrgCanSend(existing.organizationId);
+        if (denied) return denied;
+      }
       if (existing.status === "completed" && body.status === "running") {
         const pending = await prisma.dripRecipient.count({
           where: { dripCampaignId: id, status: "pending" },

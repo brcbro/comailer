@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppModal } from "@/components/app-modal";
+import { daysRemaining, isAccessExpired } from "@/lib/access";
 
 type ClientUser = {
   id: string;
@@ -19,6 +20,7 @@ type ClientOrg = {
   name: string;
   slug: string;
   isActive: boolean;
+  accessEndsAt: string | null;
   createdAt: string;
   users: ClientUser[];
   _count?: {
@@ -28,6 +30,22 @@ type ClientOrg = {
     dripCampaigns: number;
   };
 };
+
+function toDateInputValue(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+}
+
+function formatAccessLabel(accessEndsAt: string | null): string {
+  if (!accessEndsAt) return "No end date";
+  const days = daysRemaining(accessEndsAt);
+  const dateStr = new Date(accessEndsAt).toLocaleDateString();
+  if (isAccessExpired(accessEndsAt) || days === 0) return `Expired · ended ${dateStr}`;
+  if (days === 1) return `1 day left · until ${dateStr}`;
+  return `${days} days left · until ${dateStr}`;
+}
 
 export default function ClientsPage() {
   const [orgs, setOrgs] = useState<ClientOrg[]>([]);
@@ -40,6 +58,7 @@ export default function ClientsPage() {
     email: "",
     password: "",
     userName: "",
+    accessEndsAt: "",
   });
   const [resetTarget, setResetTarget] = useState<{
     orgId: string;
@@ -47,6 +66,11 @@ export default function ClientsPage() {
     email: string;
   } | null>(null);
   const [newPassword, setNewPassword] = useState("");
+  const [editAccess, setEditAccess] = useState<{
+    orgId: string;
+    name: string;
+    accessEndsAt: string;
+  } | null>(null);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
@@ -85,12 +109,42 @@ export default function ClientsPage() {
       if (!res.ok) throw new Error(data.error || "Create failed");
       toast.success("Client created");
       setCreateOpen(false);
-      setForm({ orgName: "", email: "", password: "", userName: "" });
+      setForm({
+        orgName: "",
+        email: "",
+        password: "",
+        userName: "",
+        accessEndsAt: "",
+      });
       await load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Create failed");
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function saveAccessDate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editAccess) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/clients/${editAccess.orgId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessEndsAt: editAccess.accessEndsAt || null }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Update failed");
+      }
+      toast.success("Access end date updated");
+      setEditAccess(null);
+      await load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Update failed");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -204,7 +258,7 @@ export default function ClientsPage() {
             Clients
           </h1>
           <p className="text-on-surface-variant text-sm mt-1">
-            Create and manage client organizations. Each client manages their own SMTPs, templates, and campaigns.
+            Create and manage client organizations. Set an access end date to stop sending when it expires.
           </p>
         </div>
         <button
@@ -228,111 +282,140 @@ export default function ClientsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {orgs.map((org) => (
-            <div
-              key={org.id}
-              className="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-6 space-y-4"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-headline font-bold text-on-surface">
-                      {org.name}
-                    </h2>
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                        org.isActive
-                          ? "bg-primary/10 text-primary"
-                          : "bg-error-container/50 text-error"
+          {orgs.map((org) => {
+            const expired = isAccessExpired(org.accessEndsAt);
+            return (
+              <div
+                key={org.id}
+                className="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-6 space-y-4"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-xl font-headline font-bold text-on-surface">
+                        {org.name}
+                      </h2>
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                          org.isActive
+                            ? "bg-primary/10 text-primary"
+                            : "bg-error-container/50 text-error"
+                        }`}
+                      >
+                        {org.isActive ? "Active" : "Disabled"}
+                      </span>
+                      {expired && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-error-container/50 text-error">
+                          Access expired
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-on-surface-variant mt-1 font-mono">
+                      {org.slug}
+                    </p>
+                    <p
+                      className={`text-xs mt-1.5 font-semibold ${
+                        expired ? "text-error" : "text-on-surface-variant"
                       }`}
                     >
-                      {org.isActive ? "Active" : "Disabled"}
-                    </span>
+                      {formatAccessLabel(org.accessEndsAt)}
+                    </p>
                   </div>
-                  <p className="text-xs text-on-surface-variant mt-1 font-mono">
-                    {org.slug}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    disabled={saving}
-                    onClick={() => toggleOrg(org)}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-outline-variant/30 hover:bg-surface-variant/40 cursor-pointer"
-                  >
-                    {org.isActive ? "Disable" : "Enable"}
-                  </button>
-                  {org.id !== "org_internal_default" && (
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       disabled={saving}
-                      onClick={() => deleteOrg(org)}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-error/30 text-error hover:bg-error-container/40 cursor-pointer"
+                      onClick={() =>
+                        setEditAccess({
+                          orgId: org.id,
+                          name: org.name,
+                          accessEndsAt: toDateInputValue(org.accessEndsAt),
+                        })
+                      }
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-outline-variant/30 hover:bg-surface-variant/40 cursor-pointer"
                     >
-                      Delete
+                      Edit end date
                     </button>
-                  )}
-                </div>
-              </div>
-
-              {org._count && (
-                <div className="flex flex-wrap gap-3 text-[11px] text-on-surface-variant">
-                  <span>{org._count.smtpConfigs} SMTP</span>
-                  <span>{org._count.templates} templates</span>
-                  <span>{org._count.campaigns} campaigns</span>
-                  <span>{org._count.dripCampaigns} drips</span>
-                </div>
-              )}
-
-              <div className="border-t border-outline-variant/20 pt-4 space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                  Users
-                </h3>
-                {org.users.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-on-surface">
-                        {user.email}
-                        {!user.isActive && (
-                          <span className="ml-2 text-[10px] text-error font-bold">DISABLED</span>
-                        )}
-                      </p>
-                      {user.name && (
-                        <p className="text-xs text-on-surface-variant">{user.name}</p>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={saving}
+                      onClick={() => toggleOrg(org)}
+                      className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-outline-variant/30 hover:bg-surface-variant/40 cursor-pointer"
+                    >
+                      {org.isActive ? "Disable" : "Enable"}
+                    </button>
+                    {org.id !== "org_internal_default" && (
                       <button
                         type="button"
                         disabled={saving}
-                        onClick={() =>
-                          setResetTarget({
-                            orgId: org.id,
-                            userId: user.id,
-                            email: user.email,
-                          })
-                        }
-                        className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-outline-variant/30 hover:bg-surface-variant/40 cursor-pointer"
+                        onClick={() => deleteOrg(org)}
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-error/30 text-error hover:bg-error-container/40 cursor-pointer"
                       >
-                        Reset password
+                        Delete
                       </button>
-                      <button
-                        type="button"
-                        disabled={saving}
-                        onClick={() => toggleUser(org.id, user)}
-                        className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-outline-variant/30 hover:bg-surface-variant/40 cursor-pointer"
-                      >
-                        {user.isActive ? "Disable" : "Enable"}
-                      </button>
-                    </div>
+                    )}
                   </div>
-                ))}
+                </div>
+
+                {org._count && (
+                  <div className="flex flex-wrap gap-3 text-[11px] text-on-surface-variant">
+                    <span>{org._count.smtpConfigs} SMTP</span>
+                    <span>{org._count.templates} templates</span>
+                    <span>{org._count.campaigns} campaigns</span>
+                    <span>{org._count.dripCampaigns} drips</span>
+                  </div>
+                )}
+
+                <div className="border-t border-outline-variant/20 pt-4 space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                    Users
+                  </h3>
+                  {org.users.map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-on-surface">
+                          {user.email}
+                          {!user.isActive && (
+                            <span className="ml-2 text-[10px] text-error font-bold">DISABLED</span>
+                          )}
+                        </p>
+                        {user.name && (
+                          <p className="text-xs text-on-surface-variant">{user.name}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={saving}
+                          onClick={() =>
+                            setResetTarget({
+                              orgId: org.id,
+                              userId: user.id,
+                              email: user.email,
+                            })
+                          }
+                          className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-outline-variant/30 hover:bg-surface-variant/40 cursor-pointer"
+                        >
+                          Reset password
+                        </button>
+                        <button
+                          type="button"
+                          disabled={saving}
+                          onClick={() => toggleUser(org.id, user)}
+                          className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-outline-variant/30 hover:bg-surface-variant/40 cursor-pointer"
+                        >
+                          {user.isActive ? "Disable" : "Enable"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -401,12 +484,60 @@ export default function ClientsPage() {
               className="w-full px-3 py-2.5 rounded-xl border border-outline-variant/30 bg-surface-container-low text-sm"
             />
           </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-on-surface-variant">
+              Access end date
+            </label>
+            <input
+              required
+              type="date"
+              value={form.accessEndsAt}
+              onChange={(e) => setForm((f) => ({ ...f, accessEndsAt: e.target.value }))}
+              className="w-full px-3 py-2.5 rounded-xl border border-outline-variant/30 bg-surface-container-low text-sm"
+            />
+            <p className="text-[11px] text-on-surface-variant">
+              After this date the client can still log in but cannot send mail or run drips.
+            </p>
+          </div>
           <button
             type="submit"
             disabled={creating}
             className="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-sm disabled:opacity-50 cursor-pointer"
           >
             {creating ? "Creating…" : "Create client"}
+          </button>
+        </form>
+      </AppModal>
+
+      <AppModal
+        open={!!editAccess}
+        onClose={() => setEditAccess(null)}
+        panelClassName="p-6 space-y-4"
+      >
+        <h2 className="text-xl font-headline font-bold text-on-surface">
+          Edit access end date
+        </h2>
+        <p className="text-sm text-on-surface-variant">
+          {editAccess?.name}
+        </p>
+        <form onSubmit={saveAccessDate} className="space-y-4">
+          <input
+            required
+            type="date"
+            value={editAccess?.accessEndsAt ?? ""}
+            onChange={(e) =>
+              setEditAccess((prev) =>
+                prev ? { ...prev, accessEndsAt: e.target.value } : prev,
+              )
+            }
+            className="w-full px-3 py-2.5 rounded-xl border border-outline-variant/30 bg-surface-container-low text-sm"
+          />
+          <button
+            type="submit"
+            disabled={saving}
+            className="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-sm disabled:opacity-50 cursor-pointer"
+          >
+            {saving ? "Saving…" : "Save end date"}
           </button>
         </form>
       </AppModal>

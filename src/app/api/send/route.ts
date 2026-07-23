@@ -10,6 +10,7 @@ import {
   resolveOrganizationId,
   tenantErrorResponse,
 } from "@/lib/tenant";
+import { assertOrgCanSend } from "@/lib/assert-org-access";
 
 interface RecipientInput {
   email: string;
@@ -37,6 +38,9 @@ export async function POST(request: Request) {
       requestedOrgId: readRequestedOrgId(request, body),
       requireOrg: true,
     });
+
+    const denied = await assertOrgCanSend(organizationId!);
+    if (denied) return denied;
 
     if (!campaignName || !smtpConfigId || !senderId || !subject || !emailBody) {
       return NextResponse.json(

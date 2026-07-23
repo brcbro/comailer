@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, requireAdmin } from "@/lib/auth";
+import { parseAccessEndsAt } from "@/lib/access";
 
 export async function GET(
   _request: Request,
@@ -57,12 +58,30 @@ export async function PATCH(
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    const data: { name?: string; isActive?: boolean } = {};
+    const data: {
+      name?: string;
+      isActive?: boolean;
+      accessEndsAt?: Date | null;
+    } = {};
     if (typeof body.name === "string" && body.name.trim()) {
       data.name = body.name.trim();
     }
     if (typeof body.isActive === "boolean") {
       data.isActive = body.isActive;
+    }
+    if ("accessEndsAt" in body) {
+      if (body.accessEndsAt === null || body.accessEndsAt === "") {
+        data.accessEndsAt = null;
+      } else {
+        const parsed = parseAccessEndsAt(body.accessEndsAt);
+        if (!parsed) {
+          return NextResponse.json(
+            { error: "Invalid access end date" },
+            { status: 400 },
+          );
+        }
+        data.accessEndsAt = parsed;
+      }
     }
 
     const org = await prisma.organization.update({

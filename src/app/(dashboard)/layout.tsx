@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/sidebar";
+import { AccessDaysBadge } from "@/components/access-days-badge";
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 
@@ -32,7 +33,7 @@ export default async function DashboardLayout({
           </div>
         </div>
 
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-3 text-on-surface-variant">
             <Link
               href="/smtp"
@@ -53,6 +54,8 @@ export default async function DashboardLayout({
           </div>
 
           <div className="h-6 w-px bg-outline-variant/30"></div>
+
+          <AccessDaysBadge />
 
           <div className="flex items-center gap-2.5 bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant/20">
             <div className="size-7 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">

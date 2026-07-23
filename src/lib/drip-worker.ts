@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/mailer";
 import { personalize, prepareTrackedBody } from "@/lib/tracking";
+import { isAccessExpired } from "@/lib/access";
 
 const TICK_MS = 60_000; // every minute
 const SEND_DELAY_MS = 800; // spacing within a batch
@@ -66,6 +67,18 @@ async function processOneDrip(dripId: string) {
   });
 
   if (!drip || drip.status !== "running") return;
+
+  const org = await prisma.organization.findUnique({
+    where: { id: drip.organizationId },
+    select: { isActive: true, accessEndsAt: true },
+  });
+  if (!org?.isActive || isAccessExpired(org.accessEndsAt)) {
+    await prisma.dripCampaign.update({
+      where: { id: drip.id },
+      data: { status: "paused" },
+    });
+    return;
+  }
 
   const key = todayKey();
   let sentToday = drip.sentToday;

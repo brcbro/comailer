@@ -5,6 +5,7 @@ import {
   requireAdmin,
   slugify,
 } from "@/lib/auth";
+import { parseAccessEndsAt } from "@/lib/access";
 
 export async function GET() {
   const auth = await requireAdmin();
@@ -50,10 +51,18 @@ export async function POST(request: Request) {
       .toLowerCase();
     const password = String(body.password || "");
     const userName = body.userName ? String(body.userName).trim() : null;
+    const accessEndsAt = parseAccessEndsAt(body.accessEndsAt);
 
     if (!orgName || !email || !password) {
       return NextResponse.json(
         { error: "Organization name, email, and password are required" },
+        { status: 400 },
+      );
+    }
+
+    if (!accessEndsAt) {
+      return NextResponse.json(
+        { error: "Access end date is required" },
         { status: 400 },
       );
     }
@@ -87,6 +96,7 @@ export async function POST(request: Request) {
         name: orgName,
         slug,
         isActive: true,
+        accessEndsAt,
       },
     });
 
