@@ -64,6 +64,7 @@ export default function DripPage() {
     recipients: "",
   });
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState("");
 
   const load = useCallback(async () => {
     try {
@@ -97,9 +98,9 @@ export default function DripPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setCreating(true);
-    setError("");
+    setCreateError("");
     if (countRecipientsInText(form.recipients) === 0) {
-      setError("Add at least one valid recipient (paste or upload a CSV/Excel file).");
+      setCreateError("Add at least one valid recipient (paste or upload a CSV/Excel file).");
       setCreating(false);
       return;
     }
@@ -116,6 +117,7 @@ export default function DripPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Create failed");
       setShowCreate(false);
+      setCreateError("");
       setForm({
         name: "",
         smtpConfigId: "",
@@ -130,7 +132,7 @@ export default function DripPage() {
       });
       await load();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Create failed");
+      setCreateError(err instanceof Error ? err.message : "Create failed");
     } finally {
       setCreating(false);
     }
@@ -459,7 +461,10 @@ export default function DripPage() {
       {/* Create Modal */}
       <AppModal
         open={showCreate}
-        onClose={() => setShowCreate(false)}
+        onClose={() => {
+          setShowCreate(false);
+          setCreateError("");
+        }}
         maxWidth="max-w-2xl"
         panelClassName="max-h-[min(calc(100vh-4rem),900px)] flex flex-col"
       >
@@ -469,7 +474,10 @@ export default function DripPage() {
               </h2>
               <button
                 type="button"
-                onClick={() => setShowCreate(false)}
+                onClick={() => {
+                  setShowCreate(false);
+                  setCreateError("");
+                }}
                 className="text-on-surface-variant hover:text-on-surface cursor-pointer p-1 rounded-lg hover:bg-surface-container transition-colors"
               >
                 <span className="material-symbols-outlined text-2xl">close</span>
@@ -478,7 +486,11 @@ export default function DripPage() {
 
             <form onSubmit={handleCreate} className="flex flex-col flex-1 min-h-0">
               <div className="flex-1 overflow-y-auto scrollbar-theme px-6 py-5 space-y-4 text-xs">
-              <div className="space-y-1.5">
+              {createError && (
+                <div className="p-3 rounded-xl bg-error-container/50 border border-error/20 text-error text-xs font-medium">
+                  {createError}
+                </div>
+              )}              <div className="space-y-1.5">
                 <label className="font-bold text-on-surface-variant uppercase tracking-wider block">
                   Campaign Name
                 </label>
@@ -641,7 +653,10 @@ export default function DripPage() {
               <div className="flex justify-end gap-3 px-6 py-4 border-t border-outline-variant/20 bg-surface-container-lowest shrink-0">
                 <button
                   type="button"
-                  onClick={() => setShowCreate(false)}
+                  onClick={() => {
+                    setShowCreate(false);
+                    setCreateError("");
+                  }}
                   className="px-4 py-2.5 bg-surface-container hover:bg-surface-container-high text-on-surface-variant rounded-xl font-bold cursor-pointer"
                 >
                   Cancel

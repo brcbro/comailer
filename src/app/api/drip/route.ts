@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { insertDripRecipients } from "@/lib/drip-recipients";
 import { parseRecipientsText } from "@/lib/parse-recipients";
 import { requireSession } from "@/lib/auth";
 import {
@@ -10,28 +10,6 @@ import {
   tenantErrorResponse,
 } from "@/lib/tenant";
 import { assertOrgCanSend } from "@/lib/assert-org-access";
-
-/** Neon HTTP rejects Prisma createMany (it starts an internal transaction). */
-async function insertDripRecipients(
-  dripCampaignId: string,
-  list: { email: string; name?: string | null }[]
-) {
-  const BATCH = 200;
-  for (let i = 0; i < list.length; i += BATCH) {
-    const slice = list.slice(i, i + BATCH);
-    const rows = slice.map((r, idx) => {
-      const email = String(r.email).trim().toLowerCase();
-      const name = r.name ? String(r.name) : null;
-      const position = i + idx;
-      const id = crypto.randomUUID();
-      return Prisma.sql`(${id}, ${dripCampaignId}, ${email}, ${name}, ${position}, ${"pending"}, NOW())`;
-    });
-    await prisma.$executeRaw`
-      INSERT INTO "DripRecipient" ("id", "dripCampaignId", "email", "name", "position", "status", "createdAt")
-      VALUES ${Prisma.join(rows)}
-    `;
-  }
-}
 
 export async function GET(request: Request) {
   try {
@@ -54,30 +32,42 @@ export async function GET(request: Request) {
       },
     });
 
-    const withStats = await Promise.all(
-      campaigns.map(async (c) => {
-        const [pending, sent, failed] = await Promise.all([
-          prisma.dripRecipient.count({
-            where: { dripCampaignId: c.id, status: "pending" },
-          }),
-          prisma.dripRecipient.count({
-            where: { dripCampaignId: c.id, status: "sent" },
-          }),
-          prisma.dripRecipient.count({
-            where: { dripCampaignId: c.id, status: "failed" },
-          }),
-        ]);
-        return {
-          ...c,
-          stats: {
-            total: c._count.recipients,
-            pending,
-            sent,
-            failed,
-          },
-        };
-      })
-    );
+    // One grouped query instead of 3 counts × N campaigns (saves Worker subrequests).
+    const ids = campaigns.map((c) => c.id);
+    const statusRows =
+      ids.length === 0
+        ? []
+        : await prisma.dripRecipient.groupBy({
+            by: ["dripCampaignId", "status"],
+            where: { dripCampaignId: { in: ids } },
+            _count: { _all: true },
+          });
+
+    const byCampaign = new Map<string, { pending: number; sent: number; failed: number }>();
+    for (const row of statusRows) {
+      const cur = byCampaign.get(row.dripCampaignId) || {
+        pending: 0,
+        sent: 0,
+        failed: 0,
+      };
+      if (row.status === "pending") cur.pending = row._count._all;
+      else if (row.status === "sent") cur.sent = row._count._all;
+      else if (row.status === "failed") cur.failed = row._count._all;
+      byCampaign.set(row.dripCampaignId, cur);
+    }
+
+    const withStats = campaigns.map((c) => {
+      const s = byCampaign.get(c.id) || { pending: 0, sent: 0, failed: 0 };
+      return {
+        ...c,
+        stats: {
+          total: c._count.recipients,
+          pending: s.pending,
+          sent: s.sent,
+          failed: s.failed,
+        },
+      };
+    });
 
     return NextResponse.json(withStats);
   } catch (err: unknown) {
@@ -162,10 +152,7 @@ export async function POST(request: Request) {
     });
 
     try {
-      await insertDripRecipients(campaign.id, list);
-      const imported = await prisma.dripRecipient.count({
-        where: { dripCampaignId: campaign.id },
-      });
+      const imported = await insertDripRecipients(campaign.id, list);
       if (imported === 0) {
         throw new Error("Recipient import saved 0 rows");
       }
