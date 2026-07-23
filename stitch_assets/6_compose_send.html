@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Compose Campaign | Comailer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,700;7..72,900&amp;family=Nunito+Sans:wght@300;400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#1e1a13",
+                        "secondary": "#6b6358",
+                        "primary-fixed-dim": "#8ecf9e",
+                        "error-container": "#ffdad8",
+                        "surface-variant": "#e4e0d8",
+                        "surface-bright": "#faf6f0",
+                        "surface-dim": "#dbd7cf",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#2a6038",
+                        "on-background": "#2e3230",
+                        "surface-container-low": "#f5f1ea",
+                        "secondary-fixed-dim": "#d4ccbf",
+                        "surface-tint": "#4a7c59",
+                        "on-secondary-container": "#5e5548",
+                        "tertiary-container": "#c4a66a",
+                        "tertiary": "#705c30",
+                        "primary": "#4a7c59",
+                        "on-tertiary-container": "#554020",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#f8e0a8",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#eae6de",
+                        "on-surface": "#2e3230",
+                        "inverse-primary": "#8ecf9e",
+                        "surface-container": "#f0ece4",
+                        "on-primary-fixed": "#002110",
+                        "surface-container-highest": "#e4e0d8",
+                        "on-secondary-fixed-variant": "#4a4538",
+                        "secondary-fixed": "#f0e8db",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#74796e",
+                        "background": "#faf6f0",
+                        "outline-variant": "#c4c8bc",
+                        "on-primary-container": "#d8f0de",
+                        "on-tertiary-fixed-variant": "#554020",
+                        "tertiary-fixed-dim": "#dcc48e",
+                        "on-error-container": "#690005",
+                        "secondary-container": "#f0e8db",
+                        "inverse-on-surface": "#f5f0e8",
+                        "primary-fixed": "#c8e8d0",
+                        "primary-container": "#78a886",
+                        "on-surface-variant": "#4a4e4a",
+                        "surface": "#faf6f0",
+                        "on-tertiary-fixed": "#221a05",
+                        "inverse-surface": "#2e3230",
+                        "error": "#b83230"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Literata", "serif"],
+                        "display": ["Literata", "serif"],
+                        "body": ["Nunito Sans", "sans-serif"],
+                        "label": ["Nunito Sans", "sans-serif"]
+                    },
+                    "animation": {
+                        "slide-in-right": "slide-in-right 0.6s ease-out forwards",
+                        "pulse-glow": "pulse-glow 2s infinite"
+                    },
+                    "keyframes": {
+                        "slide-in-right": {
+                            "0%": { transform: "translateX(100%)", opacity: "0" },
+                            "100%": { transform: "translateX(0)", opacity: "1" }
+                        },
+                        "pulse-glow": {
+                            "0%, 100%": { boxShadow: "0 0 0 0 rgba(74, 124, 89, 0.4)" },
+                            "50%": { boxShadow: "0 0 20px 4px rgba(74, 124, 89, 0.2)" }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Nunito Sans', sans-serif; background-color: #faf6f0; color: #2e3230; }
+        .font-headline { font-family: 'Literata', serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e4e0d8; border-radius: 10px; }
+        .tag-pill { transition: all 0.2s ease; }
+        .tag-pill:hover { filter: brightness(0.95); }
+        .glass-panel { backdrop-filter: blur(8px); background-color: rgba(250, 246, 240, 0.8); }
+    </style>
+</head>
+<body class="flex min-h-screen overflow-hidden">
+<!-- SideNavBar Component -->
+<aside class="h-screen w-72 flex-col fixed left-0 top-0 bg-surface-container-low dark:bg-surface-container-lowest flex flex-col p-4 space-y-2 z-50">
+<div class="px-4 py-6 mb-4">
+<h1 class="font-headline font-bold text-2xl text-primary dark:text-primary-fixed-dim">Comailer</h1>
+<p class="text-on-surface-variant text-sm opacity-70">CohortIX mail suit</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors font-body text-label-large rounded-xl" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors font-body text-label-large rounded-xl" href="#">
+<span class="material-symbols-outlined mr-3">settings_input_component</span>
+                SMTP Configs
+            </a>
+<a class="flex items-center px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors font-body text-label-large rounded-xl" href="#">
+<span class="material-symbols-outlined mr-3">description</span>
+                Templates
+            </a>
+<!-- Active State: Compose -->
+<a class="flex items-center px-4 py-3 text-on-secondary-container bg-secondary-container dark:bg-secondary dark:text-on-secondary rounded-xl font-bold font-body text-label-large active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined mr-3">edit_note</span>
+                Compose
+            </a>
+<a class="flex items-center px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors font-body text-label-large rounded-xl" href="#">
+<span class="material-symbols-outlined mr-3">analytics</span>
+                Analytics
+            </a>
+</nav>
+<div class="mt-auto p-4 bg-primary/10 rounded-xl">
+<p class="text-xs font-bold text-primary mb-2 uppercase tracking-wider">Premium Plan</p>
+<p class="text-sm text-on-surface-variant mb-4">You have 12,000 credits left this month.</p>
+<button class="w-full py-2 bg-primary text-white rounded-lg font-bold text-sm hover:opacity-90 transition-opacity">
+                Upgrade Plan
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-72 flex-1 flex flex-col h-screen relative">
+<!-- TopAppBar Component -->
+<header class="w-full h-16 sticky top-0 bg-background/80 dark:bg-background/80 backdrop-blur-md flex items-center justify-between px-8 z-40">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full focus-within:ring-2 focus-within:ring-primary/20 rounded-full transition-all">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-12 pr-4 py-2 bg-surface-container border-none rounded-full text-sm focus:ring-0" placeholder="Search templates or campaigns..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-6 ml-8">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-secondary-container overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeesbjnBRS81YgnhvzNnEVwLB-MdcrCOoXSJ0FjM2gnBqR2O8BZi7P-fDgcrALHK6qUvJHfVb1trfv9HHY5im4a-K2o36fAK4moI9fHwNhGl8uwkOWIwqlImvzjcFqiKtWAePGCH1klMj1R9WX-d9HcUEBG8ccoO37jKde2d27B3oW3VwxUO20Sc0p9yx77aprM1XrCbaO6JmBKfzjjeRda4xYskXNLTPx28aa9h87Tk9vXmcv8Fsay8H5mR0Q7r5FBBI-Po85Cfc"/>
+</div>
+</div>
+</header>
+<!-- Split Pane Content -->
+<div class="flex flex-1 overflow-hidden">
+<!-- Left Pane: Configuration -->
+<section class="w-1/2 overflow-y-auto custom-scrollbar p-8 pb-32">
+<div class="max-w-2xl mx-auto space-y-8">
+<div>
+<h2 class="font-headline text-3xl font-bold text-on-background mb-2">Compose Campaign</h2>
+<p class="text-on-surface-variant">Define your audience and message parameters.</p>
+</div>
+<!-- Step 1: Identity -->
+<div class="bg-surface-container-low p-6 rounded-xl space-y-4 shadow-sm">
+<label class="block">
+<span class="text-label-large font-bold text-on-surface">Campaign Name</span>
+<input class="mt-2 block w-full bg-surface-bright border-outline-variant focus:border-primary focus:ring-primary rounded-lg p-3" placeholder="Summer Solstice Newsletter 2024" type="text"/>
+</label>
+<div class="grid grid-cols-2 gap-4">
+<label class="block">
+<span class="text-label-large font-bold text-on-surface">SMTP Configuration</span>
+<select class="mt-2 block w-full bg-surface-bright border-outline-variant focus:border-primary focus:ring-primary rounded-lg p-3">
+<option>Transaction Server (US-East)</option>
+<option>Marketing Bulk (EU-West)</option>
+<option>Internal Comms (Private)</option>
+</select>
+</label>
+<label class="block">
+<span class="text-label-large font-bold text-on-surface">Template</span>
+<select class="mt-2 block w-full bg-surface-bright border-outline-variant focus:border-primary focus:ring-primary rounded-lg p-3">
+<option>Eco-Friendly Launch</option>
+<option>Organic Roots Weekly</option>
+<option>Minimalist Text Only</option>
+<option>Custom HTML...</option>
+</select>
+</label>
+</div>
+</div>
+<!-- Step 2: Recipients -->
+<div class="bg-surface-container-low p-6 rounded-xl space-y-4 shadow-sm border-2 border-transparent focus-within:border-primary/20 transition-all">
+<div class="flex items-center justify-between">
+<span class="text-label-large font-bold text-on-surface flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">group</span>
+                                Recipient List
+                            </span>
+<button class="text-sm text-primary font-bold hover:underline">Download Sample CSV</button>
+</div>
+<!-- Rich Recipient Input -->
+<div class="relative group cursor-pointer border-2 border-dashed border-outline-variant hover:border-primary rounded-xl p-8 transition-colors bg-surface-bright" id="dropzone">
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-4xl mb-2">upload_file</span>
+<p class="text-sm">Drag CSV here or type emails manually</p>
+</div>
+<div class="min-h-[120px] flex flex-wrap gap-2 content-start relative z-10" id="tag-container">
+<span class="tag-pill bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full text-sm flex items-center shadow-sm">
+                                    hello@earthy.com <span class="material-symbols-outlined text-xs ml-2 cursor-pointer">close</span>
+</span>
+<span class="tag-pill bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full text-sm flex items-center shadow-sm">
+                                    support@nature.org <span class="material-symbols-outlined text-xs ml-2 cursor-pointer">close</span>
+</span>
+<span class="tag-pill bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full text-sm flex items-center shadow-sm">
+                                    news@greenways.io <span class="material-symbols-outlined text-xs ml-2 cursor-pointer">close</span>
+</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm p-0 flex-1 min-w-[150px]" placeholder="Type email and press enter..." type="text"/>
+</div>
+</div>
+<div class="flex justify-between text-xs text-on-surface-variant font-medium">
+<span>Supported: .csv, .txt, .xlsx</span>
+<span>Limit: 50,000 recipients per campaign</span>
+</div>
+</div>
+<!-- Step 3: Tracking & Metadata -->
+<div class="bg-surface-container-low p-6 rounded-xl space-y-4 shadow-sm">
+<span class="text-label-large font-bold text-on-surface">Advanced Options</span>
+<div class="flex flex-wrap gap-4">
+<label class="inline-flex items-center cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+<span class="ml-2 text-sm">Track Open Rates</span>
+</label>
+<label class="inline-flex items-center cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+<span class="ml-2 text-sm">Track Link Clicks</span>
+</label>
+<label class="inline-flex items-center cursor-pointer">
+<input class="rounded border-outline-variant text-primary focus:ring-primary h-5 w-5" type="checkbox"/>
+<span class="ml-2 text-sm">A/B Testing Subject</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Pane: Live Preview with Slide-in Animation -->
+<aside class="w-1/2 bg-surface-dim/30 p-8 flex flex-col h-full border-l border-outline-variant/30 animate-slide-in-right">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline text-xl font-bold flex items-center">
+<span class="material-symbols-outlined mr-2">visibility</span>
+                        Live Preview
+                    </h3>
+<div class="flex bg-surface-container rounded-full p-1">
+<button class="px-4 py-1 rounded-full bg-white shadow-sm text-xs font-bold text-primary">Desktop</button>
+<button class="px-4 py-1 rounded-full text-xs font-bold text-on-surface-variant hover:text-primary">Mobile</button>
+</div>
+</div>
+<!-- Template Frame -->
+<div class="flex-1 bg-white rounded-xl shadow-2xl overflow-hidden border border-outline-variant/20 flex flex-col max-w-2xl mx-auto w-full transition-transform hover:scale-[1.01] duration-500">
+<div class="bg-surface-container-low px-6 py-4 border-b border-outline-variant/10">
+<div class="flex items-center space-x-2">
+<div class="w-3 h-3 rounded-full bg-error/20"></div>
+<div class="w-3 h-3 rounded-full bg-tertiary/20"></div>
+<div class="w-3 h-3 rounded-full bg-primary/20"></div>
+</div>
+</div>
+<!-- Preview Canvas -->
+<div class="flex-1 overflow-y-auto bg-white p-12 space-y-8 font-body">
+<div class="flex justify-center mb-12">
+<div class="flex items-center text-primary font-bold text-2xl">
+<span class="material-symbols-outlined text-4xl mr-2" style="font-variation-settings: 'FILL' 1;">eco</span>
+                                TERRA
+                             </div>
+</div>
+<div class="w-full aspect-video rounded-xl overflow-hidden mb-8">
+<img alt="Campaign Banner" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAB6k09HK3X6mJDTFJGt3j0YOTlTX6PmpEjA66ctPXd4GfktR4eXKaOGK1eayuXimCByBv1Su6Fps3Hdrn-GNOUKkzNGjnzQOyEY2A-mfMZG7lbm_mWkLTXAw6_5wUw4urxyFAoUQdQP7Gbooqs27u6sQHsFsrk0FAqfVw_jdlwpIK2y-ml4puQQV1Btf7KbCGYwWAZq8fZK2P-yvx2meSCwEKKrrshESc10cbeOEmUAyDZ-Ks22OqwaIllipckxIIDy9m9WC8JDHc"/>
+</div>
+<div class="space-y-4">
+<h1 class="font-headline text-4xl text-on-background leading-tight">Welcome to the <br/><span class="text-primary italic">Sustainable Collective.</span></h1>
+<p class="text-lg text-on-surface-variant leading-relaxed">
+                                Dear {recipient_name}, <br/><br/>
+                                We are thrilled to share our latest collection of organic materials sourced directly from sustainable farmers. Our journey towards rooted warmth begins with a single choice—the choice to support regenerative practices.
+                            </p>
+</div>
+<div class="pt-8">
+<a class="inline-block bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:scale-105 transition-transform" href="#">Explore the Collection</a>
+</div>
+<footer class="pt-16 border-t border-surface-variant text-center space-y-2">
+<p class="text-xs text-on-surface-variant uppercase tracking-widest font-bold">Comailer</p>
+<p class="text-xs text-on-surface-variant/60">123 Forest Glade, Evergreen Valley • Unsubscribe</p>
+</footer>
+</div>
+</div>
+</aside>
+</div>
+<!-- Sticky Footer: Send Campaign -->
+<footer class="absolute bottom-0 left-0 right-0 h-24 glass-panel border-t border-outline-variant/20 flex items-center justify-between px-12 z-50">
+<div class="flex items-center space-x-12">
+<div class="space-y-1">
+<p class="text-xs text-on-surface-variant font-bold uppercase tracking-tighter">Total Recipients</p>
+<p class="text-2xl font-headline font-bold text-on-background">3,482 <span class="text-sm font-body font-normal text-on-surface-variant/60">Selected</span></p>
+</div>
+<div class="h-10 w-[1px] bg-outline-variant/30"></div>
+<div class="space-y-1">
+<p class="text-xs text-on-surface-variant font-bold uppercase tracking-tighter">Validation Status</p>
+<div class="flex items-center text-primary font-bold">
+<span class="material-symbols-outlined text-sm mr-1">check_circle</span>
+<span class="text-sm">Ready to Send</span>
+</div>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<button class="px-8 py-3 rounded-xl border border-primary text-primary font-bold hover:bg-primary/5 transition-colors">
+                    Save Draft
+                </button>
+<button class="px-10 py-3 rounded-xl bg-primary text-white font-bold flex items-center shadow-lg shadow-primary/20 active:scale-95 transition-all animate-pulse-glow" id="sendBtn" onclick="simulateSend()">
+                    Send Campaign
+                    <span class="material-symbols-outlined ml-2">send</span>
+</button>
+</div>
+</footer>
+</main>
+<!-- Micro-interactions Script -->
+<script>
+        function simulateSend() {
+            const btn = document.getElementById('sendBtn');
+            const originalContent = btn.innerHTML;
+            btn.classList.remove('animate-pulse-glow');
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> <span class="ml-2">Deploying...</span>';
+            btn.classList.add('opacity-80', 'pointer-events-none');
+            
+            setTimeout(() => {
+                btn.innerHTML = '<span class="material-symbols-outlined">verified</span> <span class="ml-2">Sent Successfully</span>';
+                btn.classList.remove('bg-primary');
+                btn.classList.add('bg-tertiary');
+            }, 2000);
+        }
+
+        // Tag behavior mock
+        const tagContainer = document.getElementById('tag-container');
+        const input = tagContainer.querySelector('input');
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && input.value.trim() !== '') {
+                const tag = document.createElement('span');
+                tag.className = 'tag-pill bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full text-sm flex items-center shadow-sm animate-in fade-in zoom-in duration-300';
+                tag.innerHTML = `${input.value.trim()} <span class="material-symbols-outlined text-xs ml-2 cursor-pointer" onclick="this.parentElement.remove()">close</span>`;
+                tagContainer.insertBefore(tag, input);
+                input.value = '';
+            }
+        });
+
+        // Dropzone highlight
+        const dropzone = document.getElementById('dropzone');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropzone.classList.add('bg-primary/5', 'border-primary');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('bg-primary/5', 'border-primary');
+            }, false);
+        });
+    </script>
+</body></html>

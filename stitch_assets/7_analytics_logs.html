@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Comailer - Detailed Analytics</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Nunito+Sans:ital,opsz,wght@0,200..1000;1,200..1000&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#1e1a13",
+                    "secondary": "#6b6358",
+                    "primary-fixed-dim": "#8ecf9e",
+                    "error-container": "#ffdad8",
+                    "surface-variant": "#e4e0d8",
+                    "surface-bright": "#faf6f0",
+                    "surface-dim": "#dbd7cf",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed-variant": "#2a6038",
+                    "on-background": "#2e3230",
+                    "surface-container-low": "#f5f1ea",
+                    "secondary-fixed-dim": "#d4ccbf",
+                    "surface-tint": "#4a7c59",
+                    "on-secondary-container": "#5e5548",
+                    "tertiary-container": "#c4a66a",
+                    "tertiary": "#705c30",
+                    "primary": "#4a7c59",
+                    "on-tertiary-container": "#554020",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#f8e0a8",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#eae6de",
+                    "on-surface": "#2e3230",
+                    "inverse-primary": "#8ecf9e",
+                    "surface-container": "#f0ece4",
+                    "on-primary-fixed": "#002110",
+                    "surface-container-highest": "#e4e0d8",
+                    "on-secondary-fixed-variant": "#4a4538",
+                    "secondary-fixed": "#f0e8db",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "outline": "#74796e",
+                    "background": "#faf6f0",
+                    "outline-variant": "#c4c8bc",
+                    "on-primary-container": "#d8f0de",
+                    "on-tertiary-fixed-variant": "#554020",
+                    "tertiary-fixed-dim": "#dcc48e",
+                    "on-error-container": "#690005",
+                    "secondary-container": "#f0e8db",
+                    "inverse-on-surface": "#f5f0e8",
+                    "primary-fixed": "#c8e8d0",
+                    "primary-container": "#78a886",
+                    "on-surface-variant": "#4a4e4a",
+                    "surface": "#faf6f0",
+                    "on-tertiary-fixed": "#221a05",
+                    "inverse-surface": "#2e3230",
+                    "error": "#b83230"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.5rem",
+                    "lg": "1rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Literata", "serif"],
+                    "display": ["Literata", "serif"],
+                    "body": ["Nunito Sans", "sans-serif"],
+                    "label": ["Nunito Sans", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        font-family: 'Nunito Sans', sans-serif;
+        background-color: #faf6f0;
+        color: #2e3230;
+      }
+      h1, h2, h3, h4 {
+        font-family: 'Literata', serif;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #c4c8bc;
+        border-radius: 10px;
+      }
+      .card-shadow {
+        box-shadow: 0 4px 20px rgba(46, 50, 48, 0.06);
+      }
+      
+      /* Line Drawing Animation */
+      @keyframes draw {
+        from { stroke-dashoffset: 2000; }
+        to { stroke-dashoffset: 0; }
+      }
+      .chart-line {
+        stroke-dasharray: 2000;
+        stroke-dashoffset: 2000;
+        animation: draw 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      
+      /* Slide-in from right animation for logs */
+      @keyframes slideInRight {
+        from { transform: translateX(30px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      .animate-slideInRight {
+        animation: slideInRight 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+      
+      @keyframes fadeInArea {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .chart-area {
+        animation: fadeInArea 1s ease-in 1.5s forwards;
+        opacity: 0;
+      }
+    </style>
+</head>
+<body class="bg-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<aside class="h-screen w-72 flex-col fixed left-0 top-0 bg-surface-container-low dark:bg-surface-container-lowest flex p-4 space-y-2 z-50">
+<div class="px-4 py-6 mb-4">
+<h1 class="font-headline font-bold text-2xl text-primary dark:text-primary-fixed-dim">Comailer</h1>
+<p class="text-on-surface-variant text-sm font-label opacity-70">CohortIX mail suit</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-xl group active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-label text-label-large">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-xl group active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined mr-3">settings_input_component</span>
+<span class="font-label text-label-large">SMTP Configs</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-xl group active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined mr-3">description</span>
+<span class="font-label text-label-large">Templates</span>
+</a>
+<a class="flex items-center px-4 py-3 text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-xl group active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined mr-3">edit_note</span>
+<span class="font-label text-label-large">Compose</span>
+</a>
+<!-- Active Navigation: Analytics -->
+<a class="flex items-center px-4 py-3 text-on-secondary-container bg-secondary-container dark:bg-secondary dark:text-on-secondary rounded-xl font-bold transition-colors group active:scale-95 duration-200" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label text-label-large">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto p-4 bg-primary-container/20 rounded-xl">
+<p class="text-xs font-bold text-primary uppercase tracking-wider mb-2">Current Plan</p>
+<p class="text-sm font-label text-on-surface mb-3">Professional Suite</p>
+<button class="w-full py-2 px-4 bg-primary text-on-primary rounded-lg text-sm font-bold hover:opacity-90 transition-opacity active:scale-95">Upgrade Plan</button>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="w-full h-16 sticky top-0 bg-background/80 dark:bg-background/80 backdrop-blur-md flex items-center justify-between px-8 ml-72 w-[calc(100%-18rem)] z-40">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full focus-within:ring-2 focus-within:ring-primary/20 rounded-full transition-all">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-0 text-sm font-body" placeholder="Search analytics..." type="text"/>
+</div>
+</div>
+<div class="flex items-center space-x-6">
+<div class="flex items-center space-x-2">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="h-8 w-px bg-outline-variant/30"></div>
+<div class="flex items-center space-x-3">
+<div class="text-right hidden xl:block">
+<p class="text-sm font-bold text-on-surface leading-none">Alex Rivera</p>
+<p class="text-xs text-on-surface-variant leading-none mt-1">Admin</p>
+</div>
+<img alt="Alex Rivera Profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZMUBQ5DBR2ExCJPt-C0VMuxoBjpjpTX96SvkpXNckO-GAMjQqkZb8jSKbPbWTYoHh6bwpchaGI637QswYzUhQglheM5TaHj7PFFruY0QFxLZ-zYmct90yxwEC0iuz5hfPIL4Th1V3tu0HIg-6-Mq50K2TMVvkrGljFAJJDoHt8yDIe6DYP-pUgefbalOSZGkkP1N6v3cqtD9QKLZ597cUoJiX1sED3MWD2TygzYUB2pX2FKSp4covQKmkum_U_Yv8hZSHCyoyG08"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-72 p-8 min-h-screen">
+<!-- Header Section: Stats & Controls -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div>
+<h2 class="text-3xl font-headline font-bold text-on-surface mb-2">Detailed Analytics</h2>
+<p class="text-on-surface-variant font-body">Tracking performance across all delivery channels.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center bg-surface-container rounded-xl px-4 py-2 group cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-primary mr-2 text-xl">calendar_today</span>
+<span class="text-sm font-label text-on-surface">Oct 01 - Oct 31, 2023</span>
+<span class="material-symbols-outlined text-on-surface-variant ml-4 text-lg">expand_more</span>
+</div>
+<button class="flex items-center bg-primary text-on-primary px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-primary/10 hover:brightness-110 transition-all active:scale-95">
+<span class="material-symbols-outlined mr-2 text-lg">file_download</span>
+                    Export Report
+                </button>
+</div>
+</div>
+<!-- Stat Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<!-- Sent -->
+<div class="bg-surface-container-low p-6 rounded-xl card-shadow border border-outline-variant/10 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-primary/20 text-5xl rotate-12 transition-transform group-hover:rotate-0">forward_to_inbox</span>
+</div>
+<p class="text-on-surface-variant font-label text-sm uppercase tracking-wider mb-2">Emails Sent</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-headline font-extrabold text-on-surface">1,284,502</h3>
+<span class="text-primary text-sm font-bold flex items-center bg-primary/10 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-xs mr-0.5">trending_up</span> 12.5%
+                    </span>
+</div>
+<div class="mt-4 h-1 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[75%] transition-all duration-1000 ease-out"></div>
+</div>
+</div>
+<!-- Open Rate -->
+<div class="bg-surface-container-low p-6 rounded-xl card-shadow border border-outline-variant/10 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-tertiary/20 text-5xl rotate-12 transition-transform group-hover:rotate-0">drafts</span>
+</div>
+<p class="text-on-surface-variant font-label text-sm uppercase tracking-wider mb-2">Avg. Open Rate</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-headline font-extrabold text-on-surface">42.8%</h3>
+<span class="text-tertiary text-sm font-bold flex items-center bg-tertiary/10 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-xs mr-0.5">trending_up</span> 3.2%
+                    </span>
+</div>
+<div class="mt-4 h-1 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[42.8%] transition-all duration-1000 ease-out"></div>
+</div>
+</div>
+<!-- Click Rate -->
+<div class="bg-surface-container-low p-6 rounded-xl card-shadow border border-outline-variant/10 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-secondary/20 text-5xl rotate-12 transition-transform group-hover:rotate-0">ads_click</span>
+</div>
+<p class="text-on-surface-variant font-label text-sm uppercase tracking-wider mb-2">Avg. Click Rate</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-headline font-extrabold text-on-surface">18.4%</h3>
+<span class="text-error text-sm font-bold flex items-center bg-error/10 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-xs mr-0.5">trending_down</span> 0.8%
+                    </span>
+</div>
+<div class="mt-4 h-1 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[18.4%] transition-all duration-1000 ease-out"></div>
+</div>
+</div>
+</div>
+<!-- Interactive Time-Series Line Chart -->
+<div class="bg-surface-container-low p-8 rounded-xl card-shadow border border-outline-variant/10 mb-8">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="text-xl font-headline font-bold text-on-surface">Engagement Overview</h3>
+<p class="text-sm text-on-surface-variant">Comparing opens and clicks for the last 30 days</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-sm font-label text-on-surface">Opens</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-tertiary"></span>
+<span class="text-sm font-label text-on-surface">Clicks</span>
+</div>
+</div>
+</div>
+<!-- Chart Visualization with Drawing Animation -->
+<div class="h-80 w-full relative flex items-end justify-between gap-4 overflow-hidden">
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 1200 320">
+<defs>
+<lineargradient id="grad-opens" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#4a7c59" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#4a7c59" stop-opacity="0"></stop>
+</lineargradient>
+<lineargradient id="grad-clicks" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#705c30" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#705c30" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Opens Line Area (Fade in) -->
+<path class="chart-area" d="M0 200 Q 150 120, 300 160 T 600 80 T 900 120 T 1200 100 L 1200 320 L 0 320 Z" fill="url(#grad-opens)"></path>
+<!-- Clicks Line Area (Fade in) -->
+<path class="chart-area" d="M0 280 Q 150 240, 300 260 T 600 220 T 900 250 T 1200 230 L 1200 320 L 0 320 Z" fill="url(#grad-clicks)"></path>
+<!-- Opens Line (Draw in) -->
+<path class="chart-line" d="M0 200 Q 150 120, 300 160 T 600 80 T 900 120 T 1200 100" fill="transparent" stroke="#4a7c59" stroke-width="3"></path>
+<!-- Clicks Line (Draw in) -->
+<path class="chart-line" d="M0 280 Q 150 240, 300 260 T 600 220 T 900 250 T 1200 230" fill="transparent" stroke="#705c30" stroke-dasharray="8 4" stroke-width="3"></path>
+</svg>
+<!-- Chart Labels -->
+<div class="absolute bottom-0 w-full flex justify-between px-2 pt-4 border-t border-outline-variant/30 text-[10px] uppercase font-bold text-on-surface-variant/50">
+<span>Oct 01</span>
+<span>Oct 07</span>
+<span>Oct 14</span>
+<span>Oct 21</span>
+<span>Oct 28</span>
+<span>Oct 31</span>
+</div>
+</div>
+</div>
+<!-- Bottom Row: Top Campaigns & Live Log -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Left: Top Performing Campaigns -->
+<div class="bg-surface-container-low rounded-xl card-shadow border border-outline-variant/10 overflow-hidden">
+<div class="p-6 border-b border-outline-variant/20 flex items-center justify-between">
+<h3 class="text-xl font-headline font-bold text-on-surface">Top Performing Campaigns</h3>
+<button class="text-primary text-sm font-bold hover:underline">View All</button>
+</div>
+<div class="divide-y divide-outline-variant/10">
+<!-- Campaign Item 1 -->
+<div class="p-6 flex items-center justify-between hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">campaign</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Autumn Collection Launch</p>
+<p class="text-xs text-on-surface-variant font-label">Sent to 45,200 recipients</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-on-surface">54.2% Open</p>
+<p class="text-xs text-primary font-bold">22.8% Click</p>
+</div>
+</div>
+<!-- Campaign Item 2 -->
+<div class="p-6 flex items-center justify-between hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">loyalty</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">VIP Early Access Sale</p>
+<p class="text-xs text-on-surface-variant font-label">Sent to 12,500 recipients</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-on-surface">68.1% Open</p>
+<p class="text-xs text-primary font-bold">31.4% Click</p>
+</div>
+</div>
+<!-- Campaign Item 3 -->
+<div class="p-6 flex items-center justify-between hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">event</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Monthly Newsletter - October</p>
+<p class="text-xs text-on-surface-variant font-label">Sent to 1.2M recipients</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-on-surface">39.5% Open</p>
+<p class="text-xs text-primary font-bold">14.2% Click</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Live Engagement Log -->
+<div class="bg-surface-container-low rounded-xl card-shadow border border-outline-variant/10 overflow-hidden flex flex-col h-full">
+<div class="p-6 border-b border-outline-variant/20 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<h3 class="text-xl font-headline font-bold text-on-surface">Live Engagement Log</h3>
+<span class="flex h-2 w-2 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+</div>
+<span class="text-xs font-label text-on-surface-variant px-2 py-1 bg-surface-container rounded-md">Live Stream</span>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6 max-h-[400px]" id="log-scroll-container">
+<div class="space-y-6" id="log-items-container">
+<!-- Log Entry 1 -->
+<div class="flex items-start gap-4 animate-slideInRight">
+<div class="mt-1">
+<span class="material-symbols-outlined text-primary text-xl">mark_email_read</span>
+</div>
+<div class="flex-1 border-b border-outline-variant/10 pb-4">
+<div class="flex justify-between items-start mb-1">
+<p class="text-sm font-bold text-on-surface">Sarah Mitchell <span class="font-normal text-on-surface-variant opacity-70">opened</span></p>
+<span class="text-[10px] font-label text-on-surface-variant">Just now</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-1 truncate">Campaign: Autumn Collection Launch</p>
+<div class="flex items-center gap-3">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Mobile</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">London, UK</span>
+</div>
+</div>
+</div>
+<!-- Log Entry 2 -->
+<div class="flex items-start gap-4 animate-slideInRight" style="animation-delay: 0.1s;">
+<div class="mt-1">
+<span class="material-symbols-outlined text-tertiary text-xl">ads_click</span>
+</div>
+<div class="flex-1 border-b border-outline-variant/10 pb-4">
+<div class="flex justify-between items-start mb-1">
+<p class="text-sm font-bold text-on-surface">Michael Chen <span class="font-normal text-on-surface-variant opacity-70">clicked link</span></p>
+<span class="text-[10px] font-label text-on-surface-variant">2 mins ago</span>
+</div>
+<p class="text-xs text-tertiary font-bold mb-1 truncate">"Shop New Arrivals" in VIP Access</p>
+<div class="flex items-center gap-3">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Desktop</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">San Francisco, US</span>
+</div>
+</div>
+</div>
+<!-- Log Entry 3 -->
+<div class="flex items-start gap-4 animate-slideInRight" style="animation-delay: 0.2s;">
+<div class="mt-1">
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">mark_email_read</span>
+</div>
+<div class="flex-1 border-b border-outline-variant/10 pb-4">
+<div class="flex justify-between items-start mb-1">
+<p class="text-sm font-bold text-on-surface">Emma Thompson <span class="font-normal text-on-surface-variant opacity-70">opened</span></p>
+<span class="text-[10px] font-label text-on-surface-variant">5 mins ago</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-1 truncate">Campaign: Monthly Newsletter</p>
+<div class="flex items-center gap-3">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Tablet</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Berlin, DE</span>
+</div>
+</div>
+</div>
+<!-- Log Entry 4 -->
+<div class="flex items-start gap-4 animate-slideInRight" style="animation-delay: 0.3s;">
+<div class="mt-1">
+<span class="material-symbols-outlined text-primary text-xl">mark_email_read</span>
+</div>
+<div class="flex-1 border-b border-outline-variant/10 pb-4">
+<div class="flex justify-between items-start mb-1">
+<p class="text-sm font-bold text-on-surface">David Wilson <span class="font-normal text-on-surface-variant opacity-70">opened</span></p>
+<span class="text-[10px] font-label text-on-surface-variant">8 mins ago</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-1 truncate">Campaign: Autumn Collection Launch</p>
+<div class="flex items-center gap-3">
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Mobile</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">New York, US</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const itemsContainer = document.getElementById('log-items-container');
+            
+            // Randomly simulate new entries with slide-in animation
+            setInterval(() => {
+                const names = ['Liam Garcia', 'Sophia Lee', 'James Miller', 'Olivia Brown', 'Ava Martinez'];
+                const actions = ['opened', 'clicked link'];
+                const colors = ['text-primary', 'text-tertiary'];
+                const icons = ['mark_email_read', 'ads_click'];
+                const locations = ['Tokyo, JP', 'Paris, FR', 'Sydney, AU', 'Mumbai, IN'];
+                
+                const randomIdx = Math.floor(Math.random() * names.length);
+                const actionIdx = Math.floor(Math.random() * actions.length);
+                const locIdx = Math.floor(Math.random() * locations.length);
+                
+                const newEntry = document.createElement('div');
+                // Use the slide-in animation class for new entries
+                newEntry.className = 'flex items-start gap-4 animate-slideInRight';
+                newEntry.innerHTML = `
+                    <div class="mt-1">
+                        <span class="material-symbols-outlined ${colors[actionIdx]} text-xl">${icons[actionIdx]}</span>
+                    </div>
+                    <div class="flex-1 border-b border-outline-variant/10 pb-4">
+                        <div class="flex justify-between items-start mb-1">
+                            <p class="text-sm font-bold text-on-surface">${names[randomIdx]} <span class="font-normal text-on-surface-variant opacity-70">${actions[actionIdx]}</span></p>
+                            <span class="text-[10px] font-label text-on-surface-variant">Just now</span>
+                        </div>
+                        <p class="text-xs text-on-surface-variant mb-1 truncate">Campaign: Autumn Collection Launch</p>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Mobile</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">${locations[locIdx]}</span>
+                        </div>
+                    </div>
+                `;
+                
+                itemsContainer.prepend(newEntry);
+                
+                // Maintain log length
+                if (itemsContainer.children.length > 8) {
+                    itemsContainer.lastElementChild.remove();
+                }
+            }, 5000);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SMTP Configs | Comailer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400..900;1,400..900&amp;family=Nunito+Sans:ital,wght@0,200..1000;1,200..1000&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#1e1a13",
+                        "secondary": "#6b6358",
+                        "primary-fixed-dim": "#8ecf9e",
+                        "error-container": "#ffdad8",
+                        "surface-variant": "#e4e0d8",
+                        "surface-bright": "#faf6f0",
+                        "surface-dim": "#dbd7cf",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#2a6038",
+                        "on-background": "#2e3230",
+                        "surface-container-low": "#f5f1ea",
+                        "secondary-fixed-dim": "#d4ccbf",
+                        "surface-tint": "#4a7c59",
+                        "on-secondary-container": "#5e5548",
+                        "tertiary-container": "#c4a66a",
+                        "tertiary": "#705c30",
+                        "primary": "#4a7c59",
+                        "on-tertiary-container": "#554020",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#f8e0a8",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#eae6de",
+                        "on-surface": "#2e3230",
+                        "inverse-primary": "#8ecf9e",
+                        "surface-container": "#f0ece4",
+                        "on-primary-fixed": "#002110",
+                        "surface-container-highest": "#e4e0d8",
+                        "on-secondary-fixed-variant": "#4a4538",
+                        "secondary-fixed": "#f0e8db",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#74796e",
+                        "background": "#faf6f0",
+                        "outline-variant": "#c4c8bc",
+                        "on-primary-container": "#d8f0de",
+                        "on-tertiary-fixed-variant": "#554020",
+                        "tertiary-fixed-dim": "#dcc48e",
+                        "on-error-container": "#690005",
+                        "secondary-container": "#f0e8db",
+                        "inverse-on-surface": "#f5f0e8",
+                        "primary-fixed": "#c8e8d0",
+                        "primary-container": "#78a886",
+                        "on-surface-variant": "#4a4e4a",
+                        "surface": "#faf6f0",
+                        "on-tertiary-fixed": "#221a05",
+                        "inverse-surface": "#2e3230",
+                        "error": "#b83230"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Literata"],
+                        "display": ["Literata"],
+                        "body": ["Nunito Sans"],
+                        "label": ["Nunito Sans"]
+                    },
+                    "keyframes": {
+                        "shimmer": {
+                            "100%": { "transform": "translateX(100%)" }
+                        },
+                        "fadeUp": {
+                            "0%": { "opacity": "0", "transform": "translateY(20px)" },
+                            "100%": { "opacity": "1", "transform": "translateY(0)" }
+                        }
+                    },
+                    "animation": {
+                        "shimmer": "shimmer 2s infinite",
+                        "fadeUp": "fadeUp 0.6s ease-out forwards"
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Nunito Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Literata', serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav-item {
+            font-weight: 700;
+        }
+        .transition-soft { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-shadow { box-shadow: 0 4px 20px rgba(46, 50, 48, 0.06); }
+        
+        .shimmer-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            animation: shimmer 2.5s infinite;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar Component -->
+<aside class="h-screen w-72 flex flex-col fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant/10 z-50">
+<div class="p-8">
+<h1 class="font-headline font-bold text-2xl text-primary mb-1">Comailer</h1>
+<p class="text-on-surface-variant text-sm font-label">CohortIX mail suit</p>
+</div>
+<nav class="flex-1 px-4 space-y-2 overflow-y-auto">
+<!-- Dashboard Tab -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-variant/50 transition-soft" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label text-label-large">Dashboard</span>
+</a>
+<!-- SMTP Configs Tab (Active) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-secondary-container bg-secondary-container active-nav-item transition-soft" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="font-label text-label-large">SMTP Configs</span>
+</a>
+<!-- Templates Tab -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-variant/50 transition-soft" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label text-label-large">Templates</span>
+</a>
+<!-- Compose Tab -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-variant/50 transition-soft" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-label text-label-large">Compose</span>
+</a>
+<!-- Analytics Tab -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-variant/50 transition-soft" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label text-label-large">Analytics</span>
+</a>
+</nav>
+<div class="p-6 mt-auto">
+<button class="w-full bg-primary text-on-primary py-4 rounded-xl font-bold hover:opacity-90 active:scale-95 transition-soft">
+                Upgrade Plan
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-72 min-h-screen">
+<!-- TopAppBar Component -->
+<header class="w-full h-16 sticky top-0 bg-background/80 backdrop-blur-md flex items-center justify-between px-8 z-40">
+<div class="flex items-center gap-4 w-1/2">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container rounded-full py-2 pl-10 pr-4 border-none focus:ring-2 focus:ring-primary/20 text-body-medium font-body transition-soft" placeholder="Search configurations..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-on-surface-variant hover:text-primary transition-soft">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-soft">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-soft">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-tertiary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a software administrator, warm studio lighting, soft cream-toned background, friendly expression, natural textures, consistent with organic design system aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAznWGq7dgd28uL8maaJvx0f4eXTLJYL9GbgsydWljcIMw3k6k0M3x6TUsvA9mN2OEY4dFCQ7tiJH94W3bJMkBj8lOfOd6Fjwfp3zjcqlBoAEaM2pjgqgac8nCsOV3WUkGTEqzeRRxNKXWqeODDTLwg3-7-ciMOuOKErV2kNBqkLkO61Rwob_uu_6fBy0xX97TPrUu7P-fwCUWDP5SlKz3UMiZZIu2U7eCiwAJHS6uhgW_ptsMx7astUZ3ATa6dX9bVUVRSAEUndto"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-8 max-w-7xl mx-auto space-y-12">
+<!-- Page Header -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="text-4xl font-display font-bold text-on-background mb-2">SMTP Configs</h2>
+<p class="text-on-surface-variant font-body">Manage your external mail relay connections and API integrations.</p>
+</div>
+<button class="shimmer-btn flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-soft">
+<span class="material-symbols-outlined">add</span>
+                    Add New Connection
+                </button>
+</section>
+<!-- Connections Grid -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Connection Card 1: AWS SES -->
+<div class="animate-fadeUp opacity-0 bg-surface-container-low p-8 rounded-xl card-shadow border border-outline-variant/20 hover:border-primary/20 transition-soft group" style="animation-delay: 100ms;">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">cloud</span>
+</div>
+<div>
+<h3 class="text-xl font-headline font-bold">AWS SES Production</h3>
+<div class="flex gap-2 mt-1">
+<span class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-primary-fixed-dim text-on-primary-fixed-variant">API Mode</span>
+<span class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">us-east-1</span>
+</div>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-soft">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="space-y-4 mb-8">
+<div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10">
+<p class="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Access Key ID</p>
+<p class="font-mono text-on-surface">AKIA••••••••••••LQ3A</p>
+</div>
+<div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10">
+<p class="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Secret Access Key</p>
+<p class="font-mono text-on-surface">••••••••••••••••••••••••••••••••</p>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-primary font-bold">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(74,124,89,0.5)]"></span>
+<span class="text-sm">Active &amp; Healthy</span>
+</div>
+<button class="flex items-center gap-2 text-primary border border-primary/30 px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary/5 transition-soft" onclick="testConnection(this)">
+<span class="material-symbols-outlined text-lg">sync</span>
+                            Test Connection
+                        </button>
+</div>
+</div>
+<!-- Connection Card 2: SendGrid -->
+<div class="animate-fadeUp opacity-0 bg-surface-container-low p-8 rounded-xl card-shadow border border-outline-variant/20 hover:border-primary/20 transition-soft group" style="animation-delay: 250ms;">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-3xl">outgoing_mail</span>
+</div>
+<div>
+<h3 class="text-xl font-headline font-bold">SendGrid Relay</h3>
+<div class="flex gap-2 mt-1">
+<span class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed-variant">SMTP Mode</span>
+<span class="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant">Global</span>
+</div>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-soft">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+<div class="space-y-4 mb-8">
+<div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10">
+<p class="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">SMTP Host</p>
+<p class="font-mono text-on-surface">smtp.sendgrid.net</p>
+</div>
+<div class="p-4 bg-surface-container rounded-lg border border-outline-variant/10">
+<p class="text-xs text-on-surface-variant font-label uppercase tracking-widest mb-1">Port / Encryption</p>
+<p class="font-mono text-on-surface">587 / STARTTLS</p>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-tertiary font-bold">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-sm">Standby</span>
+</div>
+<button class="flex items-center gap-2 text-primary border border-primary/30 px-4 py-2 rounded-lg text-sm font-bold hover:bg-primary/5 transition-soft" onclick="testConnection(this)">
+<span class="material-symbols-outlined text-lg">sync</span>
+                            Test Connection
+                        </button>
+</div>
+</div>
+</section>
+<!-- Sender Management Section -->
+<section class="space-y-6">
+<div class="border-b border-outline-variant pb-4">
+<h2 class="text-2xl font-headline font-bold text-on-background">Sender Management</h2>
+<p class="text-on-surface-variant font-body">Register and verify domain senders for your active configurations.</p>
+</div>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/20 overflow-hidden card-shadow">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-outline-variant/30">
+<tr>
+<th class="px-6 py-4 font-label text-sm text-on-surface-variant uppercase tracking-widest">Sender Email / Domain</th>
+<th class="px-6 py-4 font-label text-sm text-on-surface-variant uppercase tracking-widest">Assigned Config</th>
+<th class="px-6 py-4 font-label text-sm text-on-surface-variant uppercase tracking-widest">Status</th>
+<th class="px-6 py-4 font-label text-sm text-on-surface-variant uppercase tracking-widest">Verification</th>
+<th class="px-6 py-4 font-label text-sm text-on-surface-variant uppercase tracking-widest text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Sender Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-soft">
+<td class="px-6 py-5">
+<div class="font-bold text-on-surface">newsletter@zepto.app</div>
+<div class="text-xs text-on-surface-variant mt-0.5">Identified via DKIM/SPF</div>
+</td>
+<td class="px-6 py-5">
+<span class="bg-surface-container-highest px-3 py-1 rounded-full text-xs font-bold">AWS SES Production</span>
+</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-1.5 text-primary text-sm font-bold">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+                                        Verified
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-2">
+<div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary" title="SPF Pass">
+<span class="text-[10px] font-bold">S</span>
+</div>
+<div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary" title="DKIM Pass">
+<span class="text-[10px] font-bold">D</span>
+</div>
+<div class="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-primary" title="DMARC Pass">
+<span class="text-[10px] font-bold">M</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-soft p-1">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</td>
+</tr>
+<!-- Sender Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-soft">
+<td class="px-6 py-5">
+<div class="font-bold text-on-surface">alerts@internal.io</div>
+<div class="text-xs text-on-surface-variant mt-0.5">Custom Envelope Return</div>
+</td>
+<td class="px-6 py-5">
+<span class="bg-surface-container-highest px-3 py-1 rounded-full text-xs font-bold">SendGrid Relay</span>
+</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-1.5 text-tertiary text-sm font-bold">
+<span class="material-symbols-outlined text-lg">pending</span>
+                                        Pending
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<div class="flex gap-2">
+<div class="w-6 h-6 rounded bg-error/10 flex items-center justify-center text-error" title="SPF Missing">
+<span class="text-[10px] font-bold">S</span>
+</div>
+<div class="w-6 h-6 rounded bg-tertiary/10 flex items-center justify-center text-tertiary" title="DKIM Propagating">
+<span class="text-[10px] font-bold">D</span>
+</div>
+<div class="w-6 h-6 rounded bg-surface-container-highest flex items-center justify-center text-on-surface-variant" title="DMARC Not Configured">
+<span class="text-[10px] font-bold">M</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-primary font-bold text-sm hover:underline">Verify DNS</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 bg-surface-container-low text-center">
+<button class="text-primary font-bold flex items-center justify-center gap-2 mx-auto hover:bg-primary/5 px-4 py-2 rounded-lg transition-soft">
+<span class="material-symbols-outlined">add</span>
+                            Register New Sender
+                        </button>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer -->
+<footer class="mt-auto p-12 text-center text-on-surface-variant border-t border-outline-variant/10">
+<p class="font-body text-sm opacity-70">Comailer v4.2.0 • Running on Terra Design System</p>
+</footer>
+</main>
+<!-- Success Toast (Hidden by default) -->
+<div class="fixed bottom-8 right-8 bg-on-background text-surface rounded-xl px-6 py-4 shadow-2xl translate-y-24 opacity-0 transition-all duration-500 z-[100] flex items-center gap-3" id="toast">
+<span class="material-symbols-outlined text-primary-fixed-dim">check_circle</span>
+<span class="font-bold">Connection test successful!</span>
+</div>
+<script>
+        function testConnection(btn) {
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-lg">sync</span> Testing...`;
+            
+            // Mock latency
+            setTimeout(() => {
+                btn.innerHTML = `<span class="material-symbols-outlined text-primary-fixed-dim text-lg" style="font-variation-settings: 'FILL' 1">check_circle</span> Success`;
+                showToast();
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }, 2000);
+            }, 1500);
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+    </script>
+</body></html>

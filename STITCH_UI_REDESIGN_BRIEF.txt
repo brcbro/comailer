@@ -1,0 +1,230 @@
+================================================================================
+          MAILER ADMIN - COMPLETE PLATFORM & UI SPECIFICATION BRIEF
+                      (For Redesigning via Google Stitch)
+================================================================================
+
+1. PRODUCT OVERVIEW & PURPOSE
+--------------------------------------------------------------------------------
+Name: Mailer Admin (ZeptoMail Mailer & Analytics Platform)
+Tech Stack: Next.js 15 (App Router), TypeScript, Tailwind CSS, Prisma, SQLite, Lucide Icons, Recharts, Sonner Toaster.
+Core Purpose:
+A self-hosted, multi-domain transactional and marketing email management platform built around ZeptoMail (Zoho). It allows users to:
+1. Configure multiple SMTP and ZeptoMail Send API connections across different region domains (.com, .eu, .in, .com.cn).
+2. Manage verified sender email addresses per domain.
+3. Build and test reusable HTML & Plain Text email templates with personalization variables ({{name}}, {{email}}).
+4. Compose, preview, and dispatch email campaigns to multi-recipient lists with automatic tracking pixel insertion and link rewriting.
+5. Monitor real-time engagement analytics (opens, unique opens, clicks, unique clicks, campaign open/click rates, time-series bar charts, and live event logs).
+
+--------------------------------------------------------------------------------
+2. GLOBAL LAYOUT & NAVIGATION ARCHITECTURE ("WHERE")
+--------------------------------------------------------------------------------
+Global App Frame:
+- Dark theme base UI (slate-950 background, slate-900 cards, slate-800 borders).
+- Desktop: Fixed Left Sidebar (w-64) with main content scrollable area (max-w-6xl).
+- Sidebar Elements:
+  - Header: Mail Icon logo badge, App Title ("Mailer Admin"), Platform Subtitle ("ZeptoMail").
+  - Navigation Links (with icon + active state highlight):
+    * Dashboard (`/`) [LayoutDashboard icon]
+    * SMTP Configs (`/smtp`) [Server icon]
+    * Templates (`/templates`) [FileText icon]
+    * Compose (`/compose`) [Send icon]
+    * Analytics (`/analytics`) [BarChart3 icon]
+  - Footer Action: Sign Out button [LogOut icon].
+
+Authentication Boundary:
+- `/login`: Public single-card login page.
+- All other routes (`/`, `/smtp`, `/templates`, `/compose`, `/analytics`, `/analytics/[smtpId]`): Protected inside Dashboard Layout with Sidebar.
+
+--------------------------------------------------------------------------------
+3. DETAILED PAGE-BY-PAGE UI, FEATURES & WORKFLOWS ("WHAT & HOW")
+--------------------------------------------------------------------------------
+
+--- PAGE 1: LOGIN / AUTHENTICATION (`/login`) ---
+WHAT IT CONTAINS:
+- Full-screen centered authentication card.
+- Mail icon branding header, title "Mailer Admin", description "Enter the admin password to continue".
+- Password input field (autofocus, masked).
+- Submit button "Sign in" with loading spinner state (`Loader2`).
+- Inline error banner for failed login attempts.
+HOW IT WORKS:
+- User submits password -> `POST /api/auth/login`. Sets session cookie -> Redirects to `/`.
+
+--- PAGE 2: DASHBOARD OVERVIEW (`/`) ---
+WHAT IT CONTAINS:
+- Header: Title "Dashboard Overview", subtitle "Welcome to ZeptoMail Mailer System...".
+- Row 1 - System Resource Metric Cards (3 Columns):
+  1. SMTP Configs: Displays count, Server icon, "Manage configs ->" link to `/smtp`.
+  2. Mail Templates: Displays count, FileText icon, "Manage templates ->" link to `/templates`.
+  3. Total Campaigns: Displays count, Send icon, "Send email campaign ->" link to `/compose`.
+- Row 2 - Email Engagement Stats Cards (3 Columns):
+  1. Emails Sent: Count of successfully delivered recipients (CheckCircle2 icon).
+  2. Total Opens: Aggregate tracking events count of type "OPEN" (Eye icon).
+  3. Total Clicks: Aggregate tracking events count of type "CLICK" (MousePointerClick icon).
+- Row 3 - Recent Campaigns Table:
+  - Header: Title "Recent Campaigns", "New Campaign" link.
+  - Table Columns: Campaign Name, SMTP Domain, Recipients Count, Status Badge (`sent`, `draft`), Created Date.
+  - Empty State: Message prompt to create first campaign when 0 campaigns exist.
+
+--- PAGE 3: SMTP CONFIGS & SENDER MANAGEMENT (`/smtp`) ---
+WHAT IT CONTAINS:
+- Header: Title "SMTP Configs & Senders", description, "Add SMTP Connection" primary CTA button (+ icon).
+- Connection Cards List:
+  - Card Header: Connection Name, Mode Badge (`SMTP` [purple] vs `API` [emerald]), Region Tag (`COM`, `EU`, `IN`, `COM.CN`), Verified Domain Name.
+  - Card Actions Bar:
+    * "Test Connection" button: Triggers real-time connection check (`POST /api/smtp/[id]/test`), displays spinner while testing.
+    * "Senders (X)" button: Opens drawer/modal to manage registered sender addresses.
+    * "Delete" button: Deletes SMTP config with confirmation modal.
+  - Inline Connection Test Result Banner: Green alert for successful connection, Red alert with error details for failure.
+  - API Mode Bounce Address Configuration Box (Required for ZeptoMail API):
+    * Input field for ZeptoMail Bounce Address (`bounce@bounce.domain.com`).
+    * "Save" button to commit bounce address (`PUT /api/smtp/[id]`).
+    * Explanatory text warning that ZeptoMail API fails without this address.
+  - Config Details Grid:
+    * SMTP Mode: Host (`smtp.zeptomail.com`), Port/Security (`587 / TLS`), Username (`emailapikey`), Encrypted Password status ("•••••••• Encrypted" or "Not Set").
+    * API Mode: ZeptoMail API Endpoint (`https://api.zeptomail.[region]/v1.1/email`), Encrypted API Send Token status ("Zoho-enczapikey").
+  - Senders Summary Strip: Lists sender emails attached to domain + "Manage Senders ->" action button.
+- Modal 1: Add SMTP Connection Form:
+  - Fields: Connection Name, Mode Select (`SMTP Relay` / `ZeptoMail Send API`), Region Domain Select (`com`, `eu`, `in`, `com.cn`), Verified Domain input.
+  - Conditional SMTP Fields: Host, Port, Username, Password Token.
+  - Conditional API Fields: Bounce Address, API Send Token.
+  - Actions: "Cancel", "Save Connection".
+- Modal 2: Manage Senders Drawer/Modal:
+  - Header: Domain name context.
+  - Form: Add Sender Email input (`support@domain.com`), Display Name input ("Support Team"), "Add Sender" button.
+  - Registered Senders List: Email, Display Name, "Delete Sender" trash icon.
+
+--- PAGE 4: MAIL TEMPLATES BUILDER (`/templates`) ---
+WHAT IT CONTAINS:
+- Header: Title "Mail Templates", description, "New Template" primary CTA button (+ icon).
+- Templates Cards Grid (2 Columns):
+  - Card Header: Template Name, Format Badge (`HTML` [blue] vs `TEXT` [amber]), Subject line preview, Edit icon button, Delete icon button.
+  - Body Snippet Preview Box: Dark scrollable code block with template body text or HTML code snippet.
+  - Card Footer: Last updated date, "Preview & Edit ->" action link.
+- Modal: Template Editor & Live Preview:
+  - Header: Modal Title ("New Email Template" / "Edit Template"), Dual-mode View Switcher: `Editor` button vs `Live Preview` button.
+  - Form Fields: Template Name, Format Select (`HTML` / `TEXT`), Subject Line input.
+  - Personalization Variable Quick-Chips: `{{name}}` and `{{email}}` buttons (clicking inserts placeholder into body editor).
+  - Editor View: Large syntax-styled dark font-mono textarea.
+  - Live Preview View:
+    * Subject line preview with sample data substituted (`{{name}}` -> "John Doe").
+    * HTML Mode: Embedded interactive iframe rendering the styled HTML email in real-time.
+    * TEXT Mode: Formatted dark block displaying plain text preview.
+  - Actions: "Cancel", "Save / Update Template" button.
+
+--- PAGE 5: COMPOSE & SEND EMAIL CAMPAIGN (`/compose`) ---
+WHAT IT CONTAINS:
+- Header: Title "Compose & Send Email", description.
+- Environment & Tracking Status Banner:
+  - Warning Banner: Triggers if `APP_URL` in `.env` is localhost (notifies user that pixel/click tracking won't work externally).
+  - Success Banner: Shows active tracking base URL when correctly configured with a public URL.
+- Section 1: Campaign & Connection Setup (3 Columns):
+  1. Campaign Name input (e.g., "July Newsletter").
+  2. ZeptoMail Connection dropdown (selects from configured SMTP/API connections).
+  3. Sender Address dropdown (dynamically populated based on selected connection's registered senders).
+- Section 2: Template & Subject Selection:
+  1. Load Template dropdown ("-- Custom Email --" or lists saved templates). Selecting a template automatically fills Subject Line, Body Format, and Body Content.
+  2. Subject Line input (supports variables like `{{name}}`).
+- Section 3: Email Body Editor:
+  - Header: Format toggle buttons (`HTML` vs `TEXT`).
+  - Body Content Textarea: Font-mono dark textarea.
+- Section 4: Recipients List:
+  - Header: Description ("One per line: email or email, name"), Live Valid Recipient Counter Badge (parses valid email format line by line in real-time).
+  - Recipients Textarea: Multi-line input (e.g., `john@example.com, John Doe\nalice@example.com`).
+- Section 5: Action Footer & Dispatch Result:
+  - Tracking Disclaimer: Explains that HTML emails receive transparent open pixel + link rewriting, while Text emails track clicks only.
+  - "Send Campaign" primary CTA button with loading spinner state (`Send` icon).
+  - Dispatch Result Card: Displays total recipients, successful count, failure count, or detailed error message upon completion (`POST /api/send`).
+
+--- PAGE 6: ANALYTICS OVERVIEW (`/analytics`) ---
+WHAT IT CONTAINS:
+- Header: Title "Analytics Dashboard", description.
+- Connection Analytics Cards Grid (2 Columns):
+  - Card Header: SMTP Config Name, Domain, Mode badge (`SMTP` / `API`).
+  - Stat Counters Grid (3 Columns): Total Sent, Total Opens, Total Clicks.
+  - CTA Button: "View Detailed Analytics ->" link navigating to `/analytics/[smtpId]`.
+
+--- PAGE 7: DETAILED SMTP ANALYTICS (`/analytics/[smtpId]`) ---
+WHAT IT CONTAINS:
+- Header: "Back to All Configs" link, Config Name, Mode badge, Verified Domain, "Refresh Data" button.
+- Performance Summary Stat Cards (4 Columns):
+  1. Total Sent (displays total delivered + failed count).
+  2. Open Rate % (displays percentage + unique opens / total opens count).
+  3. Click Rate % (displays percentage + unique clicks / total clicks count).
+  4. Total Campaigns (displays campaign count + total recipients count).
+- Visual Interactive Chart Section:
+  - Title: "Recent Activity (Opens vs Clicks)".
+  - Recharts Responsive Bar Chart: Time-series bar chart comparing daily Opens (emerald bar) vs Clicks (amber bar) with dark custom tooltips.
+- Campaign Performance Table:
+  - Columns: Campaign Name, Sent, Unique Opens, Open Rate %, Unique Clicks, Click Rate %, Date.
+  - Displays performance metrics broken down per campaign.
+- Live Engagement Event Log Table:
+  - Columns: Event Type (`OPEN` badge [emerald] vs `CLICK` badge [amber]), Recipient Email, Campaign Name, Details/URL Clicked (or Pixel), IP Address, Timestamp.
+  - Real-time log of every individual open pixel trigger and link redirect click.
+
+--------------------------------------------------------------------------------
+4. DESIGN SYSTEM & VISUAL STYLE GUIDE
+--------------------------------------------------------------------------------
+- Theme Mode: Dark mode baseline (`dark bg-slate-950 text-slate-100`).
+- Color Accents & Semantic Roles:
+  * Primary / System / Navigation: Blue (`bg-blue-600`, `text-blue-400`).
+  * Templates / Opens / Success: Emerald (`bg-emerald-600`, `text-emerald-400`).
+  * Clicks / Warnings / Bounce / Text format: Amber (`bg-amber-500`, `text-amber-400`).
+  * Campaigns / Analytics / Compose: Purple (`bg-purple-600`, `text-purple-400`).
+  * Destructive / Errors: Red (`bg-red-500`, `text-red-400`).
+- UI Polish Details:
+  * Rounded Corners: `rounded-2xl` for containers/cards, `rounded-xl` for buttons/inputs, `rounded-lg` for badges.
+  * Card Backgrounds: Deep slate `bg-slate-900` with subtle border `border-slate-800` and hover highlighting `hover:border-slate-700`.
+  * Typography: Clean sans-serif for UI text (Geist Sans) and font-mono for code/emails/logs (Geist Mono).
+  * Icons: Lucide React iconography throughout all navigation, buttons, badges, and table indicators.
+
+--------------------------------------------------------------------------------
+5. PROMPT INSTRUCTIONS TO FEED INTO STITCH BY GOOGLE FOR REDESIGNING
+--------------------------------------------------------------------------------
+Copy and paste the following prompt directly into Google Stitch:
+
+"""
+I want to redesign my self-hosted email management and transactional tracking dashboard called "Mailer Admin" (built for ZeptoMail).
+
+Here is the exact structure, pages, features, and functionality of my current platform:
+
+1. GLOBAL NAVIGATION & LAYOUT:
+   - Modern dark-themed dashboard with a collapsible left sidebar navigation containing: Logo & Title ("Mailer Admin"), Navigation items (Dashboard, SMTP Configs, Templates, Compose, Analytics), and Sign Out button.
+
+2. DASHBOARD OVERVIEW PAGE:
+   - Stat cards for total SMTP Configs, Mail Templates, and Total Campaigns.
+   - Quick engagement cards for Total Emails Sent, Total Opens, and Total Clicks.
+   - Recent Campaigns table with Campaign Name, SMTP Domain, Recipient Count, Status, and Sent Date.
+
+3. SMTP CONFIGS & SENDER MANAGEMENT PAGE:
+   - List of connection cards showing SMTP vs API mode, region (.com, .eu, .in, .com.cn), and verified domain.
+   - Features on each card: Connection test button with live status feedback, Bounce address field for API mode, encrypted credential indicators, and a sender management drawer to register domain senders (email + display name).
+   - Modal form to add new SMTP or API connections.
+
+4. MAIL TEMPLATES BUILDER PAGE:
+   - Grid of saved templates showing template name, subject line, format badge (HTML vs TEXT), preview snippet, edit and delete actions.
+   - Full-featured template editor modal with dual tabs (Code Editor vs Real-time Live Preview with variable substitution like {{name}} and {{email}}), quick-insert variable chips, and subject line configuration.
+
+5. COMPOSE & SEND EMAIL CAMPAIGN PAGE:
+   - Warning banner if the tracking URL isn't publicly reachable.
+   - Campaign setup inputs: Campaign Name, ZeptoMail Connection selector, Sender Address selector.
+   - Template loader dropdown (auto-fills subject line & body from saved templates).
+   - Format selector (HTML vs TEXT) and email body code editor.
+   - Multi-line recipient input box with real-time valid email counter.
+   - Send campaign button with loading indicator and detailed dispatch result summary card.
+
+6. ANALYTICS & EVENT TRACKING PAGES:
+   - Overview page listing all SMTP configs with aggregate sent, open, and click counts.
+   - Detailed analytics sub-page for each SMTP config featuring:
+     * Performance stat cards (Total Sent, Open Rate %, Click Rate %, Total Campaigns).
+     * Interactive Opens vs Clicks time-series bar chart.
+     * Campaign performance breakdown table.
+     * Live engagement log table showing individual OPEN pixel hits and CLICK link redirects with recipient email, clicked URL, IP address, and timestamp.
+
+REDESIGN DESIGN GOALS FOR STITCH:
+- Create a modern, ultra-sleek, clean UI with exceptional typography, glowing glassmorphic elements, polished micro-interactions, dark/light theme options, and fluid card layouts.
+- Upgrade data visualization with sleek mini sparklines, engagement heatmaps, and interactive analytics charts.
+- Design an intuitive visual email builder alongside the HTML code view.
+- Make the recipient input interactive with drag-and-drop CSV upload, recipient tag badges, and validation previews.
+- Ensure all screens feel cohesive, high-tech, fast, and enterprise-grade.
+"""
+================================================================================

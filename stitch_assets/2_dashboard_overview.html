@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Comailer - Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400..900&amp;family=Nunito+Sans:ital,wght@0,200..1000;1,200..1000&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#1e1a13",
+                        "secondary": "#6b6358",
+                        "primary-fixed-dim": "#8ecf9e",
+                        "error-container": "#ffdad8",
+                        "surface-variant": "#e4e0d8",
+                        "surface-bright": "#faf6f0",
+                        "surface-dim": "#dbd7cf",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#2a6038",
+                        "on-background": "#2e3230",
+                        "surface-container-low": "#f5f1ea",
+                        "secondary-fixed-dim": "#d4ccbf",
+                        "surface-tint": "#4a7c59",
+                        "on-secondary-container": "#5e5548",
+                        "tertiary-container": "#c4a66a",
+                        "tertiary": "#705c30",
+                        "primary": "#4a7c59",
+                        "on-tertiary-container": "#554020",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#f8e0a8",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#eae6de",
+                        "on-surface": "#2e3230",
+                        "inverse-primary": "#8ecf9e",
+                        "surface-container": "#f0ece4",
+                        "on-primary-fixed": "#002110",
+                        "surface-container-highest": "#e4e0d8",
+                        "on-secondary-fixed-variant": "#4a4538",
+                        "secondary-fixed": "#f0e8db",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#74796e",
+                        "background": "#faf6f0",
+                        "outline-variant": "#c4c8bc",
+                        "on-primary-container": "#d8f0de",
+                        "on-tertiary-fixed-variant": "#554020",
+                        "tertiary-fixed-dim": "#dcc48e",
+                        "on-error-container": "#690005",
+                        "secondary-container": "#f0e8db",
+                        "inverse-on-surface": "#f5f0e8",
+                        "primary-fixed": "#c8e8d0",
+                        "primary-container": "#78a886",
+                        "on-surface-variant": "#4a4e4a",
+                        "surface": "#faf6f0",
+                        "on-tertiary-fixed": "#221a05",
+                        "inverse-surface": "#2e3230",
+                        "error": "#b83230"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Literata"],
+                        "display": ["Literata"],
+                        "body": ["Nunito Sans"],
+                        "label": ["Nunito Sans"]
+                    },
+                    "animation": {
+                        "fade-in-up": "fadeInUp 0.6s ease-out forwards"
+                    },
+                    "keyframes": {
+                        "fadeInUp": {
+                            "0%": { opacity: "0", transform: "translateY(20px)" },
+                            "100%": { opacity: "1", transform: "translateY(0)" }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Nunito Sans', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Literata', serif; }
+        .glass {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .circular-gauge {
+            transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .animate-delay-100 { animation-delay: 100ms; }
+        .animate-delay-200 { animation-delay: 200ms; }
+        .animate-delay-300 { animation-delay: 300ms; }
+        .animate-delay-400 { animation-delay: 400ms; }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary/20">
+<!-- SideNavBar (Persistent) -->
+<aside class="h-screen w-72 flex-col fixed left-0 top-0 bg-surface-container-low dark:bg-surface-container-lowest p-4 flex space-y-2 z-50">
+<div class="px-4 py-6 mb-4">
+<h1 class="font-headline font-bold text-2xl text-primary dark:text-primary-fixed-dim tracking-tight">Comailer</h1>
+<p class="text-on-surface-variant text-sm font-body">CohortIX mail suit</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active: Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container bg-secondary-container dark:bg-secondary dark:text-on-secondary rounded-xl font-bold transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body text-label-large">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-xl transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="font-body text-label-large">SMTP Configs</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-xl transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-body text-label-large">Templates</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-xl transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-body text-label-large">Compose</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-xl transition-all hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body text-label-large">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto pt-4">
+<button class="w-full py-4 bg-primary text-on-primary rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 hover:shadow-lg transition-all duration-300">
+<span class="material-symbols-outlined">upgrade</span>
+<span>Upgrade Plan</span>
+</button>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="w-full h-16 sticky top-0 flex items-center justify-between px-8 ml-72 w-[calc(100%-18rem)] bg-background/80 backdrop-blur-md z-40 border-b border-outline-variant/20">
+<div class="flex items-center flex-1">
+<div class="relative w-full max-w-md focus-within:ring-2 focus-within:ring-primary/20 rounded-full transition-all">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container border-none rounded-full focus:ring-0 text-body-medium" placeholder="Search mail logs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border-2 border-background"></span>
+</button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">help</span></button>
+<button class="hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+</div>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline-variant ring-2 ring-primary/10">
+<img class="w-full h-full object-cover" data-alt="A professional user profile avatar for a technical admin, featuring a smiling mid-30s person in a modern office with soft natural lighting and warm earthy tones in the background, high quality photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaA_yrebMlg6NBbbC6_iMrjEomwxiiFcRkMsXLm6LfM6EUiEEjuB8V2AZpkOj6cm2EKGBNbVoAv-jMNzQ3OSK4_tyV0Ri5k_cZJcU5CEllzz8ykhI8E9khzcPCvN3VWhYgWvY_0EIKlQBpshQOlPxERnGqackMozVayQc009Skjyax8mYxHjeEBHV9ErJOLBa4K7mklbAUIqVBlAImvsxXf6PfU5sv_QTNWqGljTbt1_nQgcYVtIABzrA5yxZWasvjWdsUTny6i4k"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-72 p-8 max-w-[1600px] mx-auto">
+<!-- Hero Section -->
+<section class="mb-10 relative overflow-hidden bg-primary-container/20 rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 animate-fade-in-up">
+<div class="flex-1 space-y-4 relative z-10">
+<h2 class="text-4xl font-headline font-bold text-primary">Welcome back to Comailer.</h2>
+<p class="text-on-surface-variant text-lg leading-relaxed max-w-xl">
+                    Your delivery systems are operating at peak efficiency. Last month, we reached <span class="font-bold text-primary">99.8% inbox placement</span> across all SMTP nodes.
+                </p>
+<div class="flex gap-4">
+<button class="px-6 py-2 bg-primary text-on-primary rounded-lg font-bold hover:opacity-90 hover:shadow-md transition-all">Generate Report</button>
+<button class="px-6 py-2 bg-background border border-primary text-primary rounded-lg font-bold hover:bg-primary-container/20 transition-all">View Logs</button>
+</div>
+</div>
+<div class="w-full md:w-1/3 aspect-video rounded-2xl overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A warm, organic data visualization representing global email delivery paths, using flowing forest green lines and amber nodes on a soft cream background, creating a calm and grounded technical aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMmxMXzpuUtdYexdYu9NztBDNdNPBpeP4tcOpeectsLJQ_mYrUIsE6sMkEVJSnFehl8sNVe8IGQnfIUNXizY5sC-szsQBM48Atj0dksYHSiCl7qnA_BWrbjJ9F43KaZyt8wEFJ3aFUydDRoc-R36DIj1zFyWsn3-pv01PvWuWrBRwWAkCz8uONJQmI6C-SPKtPWmg74pRKubI-CPp8y6Efus7zGVl8Y4rHKvv4-ftQjwceXaDLjV9qxQUETra4DH0cwahv5wgsQBI"/>
+</div>
+</section>
+<!-- Stats Grid (Glassmorphic) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+<!-- Total SMTPs -->
+<div class="glass p-6 rounded-xl flex flex-col gap-4 opacity-0 animate-fade-in-up animate-delay-100 hover:shadow-xl transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">dns</span>
+</div>
+<span class="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded">+2 this week</span>
+</div>
+<div>
+<p class="text-sm text-on-surface-variant uppercase tracking-wider font-bold">Total SMTPs</p>
+<h3 class="text-3xl font-headline font-black text-on-background">142</h3>
+</div>
+<div class="h-10 w-full">
+<svg class="w-full h-full" viewbox="0 0 100 20">
+<path d="M0 15 Q 10 5, 20 12 T 40 8 T 60 15 T 80 5 T 100 12" fill="none" stroke="#4a7c59" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+</svg>
+</div>
+</div>
+<!-- Templates -->
+<div class="glass p-6 rounded-xl flex flex-col gap-4 opacity-0 animate-fade-in-up animate-delay-200 hover:shadow-xl transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-tertiary/10 rounded-lg text-tertiary">
+<span class="material-symbols-outlined">description</span>
+</div>
+</div>
+<div>
+<p class="text-sm text-on-surface-variant uppercase tracking-wider font-bold">Templates</p>
+<h3 class="text-3xl font-headline font-black text-on-background">58</h3>
+</div>
+<div class="h-10 w-full">
+<svg class="w-full h-full" viewbox="0 0 100 20">
+<path d="M0 10 Q 20 18, 40 10 T 80 12 T 100 5" fill="none" stroke="#705c30" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+</svg>
+</div>
+</div>
+<!-- Campaigns -->
+<div class="glass p-6 rounded-xl flex flex-col gap-4 opacity-0 animate-fade-in-up animate-delay-300 hover:shadow-xl transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">campaign</span>
+</div>
+<span class="text-xs font-bold text-error bg-error-container px-2 py-1 rounded">2 active</span>
+</div>
+<div>
+<p class="text-sm text-on-surface-variant uppercase tracking-wider font-bold">Campaigns</p>
+<h3 class="text-3xl font-headline font-black text-on-background">1,204</h3>
+</div>
+<div class="h-10 w-full">
+<svg class="w-full h-full" viewbox="0 0 100 20">
+<path d="M0 15 Q 20 15, 40 5 T 70 10 T 100 12" fill="none" stroke="#4a7c59" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+</svg>
+</div>
+</div>
+<!-- Emails Sent -->
+<div class="glass p-6 rounded-xl flex flex-col gap-4 opacity-0 animate-fade-in-up animate-delay-400 hover:shadow-xl transition-all duration-300">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-secondary/10 rounded-lg text-secondary">
+<span class="material-symbols-outlined">send</span>
+</div>
+</div>
+<div>
+<p class="text-sm text-on-surface-variant uppercase tracking-wider font-bold">Emails Sent</p>
+<h3 class="text-3xl font-headline font-black text-on-background">8.4M</h3>
+</div>
+<div class="h-10 w-full">
+<svg class="w-full h-full" viewbox="0 0 100 20">
+<path d="M0 18 L 10 12 L 20 15 L 30 8 L 40 10 L 50 4 L 60 7 L 70 2 L 80 5 L 90 1 L 100 3" fill="none" stroke="#6b6358" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+</svg>
+</div>
+</div>
+</section>
+<!-- Gauges & Main Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Live Engagement Section -->
+<section class="lg:col-span-1 bg-surface-container rounded-3xl p-8 space-y-8 opacity-0 animate-fade-in-up">
+<h3 class="text-2xl font-headline font-bold text-on-surface">Live Engagement</h3>
+<div class="flex flex-col items-center gap-10">
+<!-- Sent Gauge -->
+<div class="relative flex flex-col items-center hover:scale-105 transition-transform">
+<svg class="w-32 h-32 transform -rotate-90">
+<circle class="text-outline-variant/30" cx="64" cy="64" fill="transparent" r="56" stroke="currentColor" stroke-width="12"></circle>
+<circle class="text-primary circular-gauge" cx="64" cy="64" fill="transparent" id="gauge-sent" r="56" stroke="currentColor" stroke-dasharray="351.85" stroke-dashoffset="351.85" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center -mt-2">
+<span class="text-2xl font-headline font-black">90%</span>
+<span class="text-[10px] uppercase font-bold text-on-surface-variant">Sent</span>
+</div>
+</div>
+<div class="flex justify-around w-full">
+<!-- Opens Gauge -->
+<div class="relative flex flex-col items-center hover:scale-105 transition-transform">
+<svg class="w-24 h-24 transform -rotate-90">
+<circle class="text-outline-variant/30" cx="48" cy="48" fill="transparent" r="40" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-tertiary circular-gauge" cx="48" cy="48" fill="transparent" id="gauge-opens" r="40" stroke="currentColor" stroke-dasharray="251.32" stroke-dashoffset="251.32" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-lg font-headline font-bold">60%</span>
+<span class="text-[8px] uppercase font-bold text-on-surface-variant">Opens</span>
+</div>
+</div>
+<!-- Clicks Gauge -->
+<div class="relative flex flex-col items-center hover:scale-105 transition-transform">
+<svg class="w-24 h-24 transform -rotate-90">
+<circle class="text-outline-variant/30" cx="48" cy="48" fill="transparent" r="40" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-secondary circular-gauge" cx="48" cy="48" fill="transparent" id="gauge-clicks" r="40" stroke="currentColor" stroke-dasharray="251.32" stroke-dashoffset="251.32" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-lg font-headline font-bold">28%</span>
+<span class="text-[8px] uppercase font-bold text-on-surface-variant">Clicks</span>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-outline-variant/50 space-y-4">
+<div class="flex justify-between items-center group cursor-pointer">
+<span class="text-sm font-body text-on-surface-variant group-hover:text-on-surface transition-colors">Average Inbox Time</span>
+<span class="font-bold">4.2s</span>
+</div>
+<div class="flex justify-between items-center group cursor-pointer">
+<span class="text-sm font-body text-on-surface-variant group-hover:text-on-surface transition-colors">Spam Report Rate</span>
+<span class="font-bold text-primary">0.02%</span>
+</div>
+</div>
+</section>
+<!-- Recent Campaigns Table -->
+<section class="lg:col-span-2 bg-surface-container rounded-3xl p-8 opacity-0 animate-fade-in-up">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-2xl font-headline font-bold text-on-surface">Recent Campaigns</h3>
+<button class="text-primary font-bold text-sm hover:underline hover:opacity-80 transition-all">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead class="text-left border-b border-outline-variant">
+<tr>
+<th class="pb-4 font-bold text-sm text-on-surface-variant uppercase tracking-wider">Campaign Name</th>
+<th class="pb-4 font-bold text-sm text-on-surface-variant uppercase tracking-wider">SMTP Domain</th>
+<th class="pb-4 font-bold text-sm text-on-surface-variant uppercase tracking-wider">Recipients</th>
+<th class="pb-4 font-bold text-sm text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="pb-4 font-bold text-sm text-on-surface-variant uppercase tracking-wider">Date</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr class="group hover:bg-surface-variant/20 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-sm">
+<td class="py-5 font-headline font-bold group-hover:text-primary transition-colors">Newsletter Q4 Update</td>
+<td class="py-5 text-sm font-body text-secondary">smtp.marketing.io</td>
+<td class="py-5 text-sm font-body">45,000</td>
+<td class="py-5">
+<span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold">Sent</span>
+</td>
+<td class="py-5 text-sm text-on-surface-variant">Oct 24, 2023</td>
+</tr>
+<tr class="group hover:bg-surface-variant/20 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-sm">
+<td class="py-5 font-headline font-bold group-hover:text-primary transition-colors">Flash Sale Blast</td>
+<td class="py-5 text-sm font-body text-secondary">relay.zepto-v3.com</td>
+<td class="py-5 text-sm font-body">120,500</td>
+<td class="py-5">
+<span class="px-3 py-1 bg-tertiary-container/30 text-tertiary rounded-full text-xs font-bold">Sending</span>
+</td>
+<td class="py-5 text-sm text-on-surface-variant">Oct 25, 2023</td>
+</tr>
+<tr class="group hover:bg-surface-variant/20 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-sm">
+<td class="py-5 font-headline font-bold group-hover:text-primary transition-colors">Onboarding Flow A/B</td>
+<td class="py-5 text-sm font-body text-secondary">smtp.internal-auth.net</td>
+<td class="py-5 text-sm font-body">2,400</td>
+<td class="py-5">
+<span class="px-3 py-1 bg-outline-variant/30 text-on-surface-variant rounded-full text-xs font-bold">Draft</span>
+</td>
+<td class="py-5 text-sm text-on-surface-variant">Oct 25, 2023</td>
+</tr>
+<tr class="group hover:bg-surface-variant/20 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-sm">
+<td class="py-5 font-headline font-bold group-hover:text-primary transition-colors">Weekly Performance</td>
+<td class="py-5 text-sm font-body text-secondary">smtp.marketing.io</td>
+<td class="py-5 text-sm font-body">12,000</td>
+<td class="py-5">
+<span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold">Sent</span>
+</td>
+<td class="py-5 text-sm text-on-surface-variant">Oct 23, 2023</td>
+</tr>
+<tr class="group hover:bg-surface-variant/20 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-sm">
+<td class="py-5 font-headline font-bold group-hover:text-primary transition-colors">Enterprise Welcome</td>
+<td class="py-5 text-sm font-body text-secondary">relay.zepto-v3.com</td>
+<td class="py-5 text-sm font-body">850</td>
+<td class="py-5">
+<span class="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold">Sent</span>
+</td>
+<td class="py-5 text-sm text-on-surface-variant">Oct 22, 2023</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- System Status Footerish Section -->
+<section class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="bg-surface-container-high rounded-2xl p-6 flex items-center gap-6 border border-outline-variant/20 hover:border-primary/40 transition-colors cursor-pointer">
+<div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-lg">DKIM &amp; SPF Integrity</h4>
+<p class="text-sm text-on-surface-variant">All 142 SMTP domains passed the automated 24h health check.</p>
+</div>
+<button class="ml-auto text-primary font-bold hover:underline">Verify</button>
+</div>
+<div class="bg-surface-container-high rounded-2xl p-6 flex items-center gap-6 border border-outline-variant/20 hover:border-tertiary/40 transition-colors cursor-pointer">
+<div class="w-12 h-12 bg-tertiary rounded-xl flex items-center justify-center text-on-tertiary">
+<span class="material-symbols-outlined">speed</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-lg">System Load</h4>
+<p class="text-sm text-on-surface-variant">Current throughput is 12,500 req/s. Overhead: 12%.</p>
+</div>
+<div class="ml-auto h-2 w-24 bg-outline-variant rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[12%] animate-pulse"></div>
+</div>
+</div>
+</section>
+</main>
+<script>
+        // Enhanced gauge animation trigger
+        document.addEventListener('DOMContentLoaded', () => {
+            const animateGauges = () => {
+                const gaugeSent = document.getElementById('gauge-sent');
+                const gaugeOpens = document.getElementById('gauge-opens');
+                const gaugeClicks = document.getElementById('gauge-clicks');
+
+                setTimeout(() => {
+                    if (gaugeSent) gaugeSent.style.strokeDashoffset = '35'; // 90% of 351.85
+                    if (gaugeOpens) gaugeOpens.style.strokeDashoffset = '100'; // 60% of 251.32
+                    if (gaugeClicks) gaugeClicks.style.strokeDashoffset = '180'; // 28% of 251.32
+                }, 400);
+            };
+
+            animateGauges();
+        });
+    </script>
+</body></html>

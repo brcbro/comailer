@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Comailer - Template Builder</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Nunito+Sans:ital,opsz,wght@0,200..1000;1,200..1000&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#1e1a13",
+                        "secondary": "#6b6358",
+                        "primary-fixed-dim": "#8ecf9e",
+                        "error-container": "#ffdad8",
+                        "surface-variant": "#e4e0d8",
+                        "surface-bright": "#faf6f0",
+                        "surface-dim": "#dbd7cf",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#2a6038",
+                        "on-background": "#2e3230",
+                        "surface-container-low": "#f5f1ea",
+                        "secondary-fixed-dim": "#d4ccbf",
+                        "surface-tint": "#4a7c59",
+                        "on-secondary-container": "#5e5548",
+                        "tertiary-container": "#c4a66a",
+                        "tertiary": "#705c30",
+                        "primary": "#4a7c59",
+                        "on-tertiary-container": "#554020",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#f8e0a8",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#eae6de",
+                        "on-surface": "#2e3230",
+                        "inverse-primary": "#8ecf9e",
+                        "surface-container": "#f0ece4",
+                        "on-primary-fixed": "#002110",
+                        "surface-container-highest": "#e4e0d8",
+                        "on-secondary-fixed-variant": "#4a4538",
+                        "secondary-fixed": "#f0e8db",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#74796e",
+                        "background": "#faf6f0",
+                        "outline-variant": "#c4c8bc",
+                        "on-primary-container": "#d8f0de",
+                        "on-tertiary-fixed-variant": "#554020",
+                        "tertiary-fixed-dim": "#dcc48e",
+                        "on-error-container": "#690005",
+                        "secondary-container": "#f0e8db",
+                        "inverse-on-surface": "#f5f0e8",
+                        "primary-fixed": "#c8e8d0",
+                        "primary-container": "#78a886",
+                        "on-surface-variant": "#4a4e4a",
+                        "surface": "#faf6f0",
+                        "on-tertiary-fixed": "#221a05",
+                        "inverse-surface": "#2e3230",
+                        "error": "#b83230"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Literata"],
+                        "display": ["Literata"],
+                        "body": ["Nunito Sans"],
+                        "label": ["Nunito Sans"]
+                    },
+                    "animation": {
+                        "stagger-fade-in": "staggerFadeIn 0.5s ease-out forwards"
+                    },
+                    "keyframes": {
+                        "staggerFadeIn": {
+                            "0%": { opacity: "0", transform: "translateY(10px)" },
+                            "100%": { opacity: "1", transform: "translateY(0)" }
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Nunito Sans', sans-serif; background-color: #faf6f0; }
+        h1, h2, h3, h4 { font-family: 'Literata', serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .template-card-shadow {
+            box-shadow: 0 4px 20px rgba(46, 50, 48, 0.06);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c4c8bc;
+            border-radius: 10px;
+        }
+        .stagger-item {
+            opacity: 0;
+            animation: staggerFadeIn 0.6s ease-out forwards;
+        }
+        .stagger-item:nth-child(1) { animation-delay: 0.1s; }
+        .stagger-item:nth-child(2) { animation-delay: 0.2s; }
+        .stagger-item:nth-child(3) { animation-delay: 0.3s; }
+        .stagger-item:nth-child(4) { animation-delay: 0.4s; }
+        .stagger-item:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes staggerFadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary/20">
+<!-- Sidebar Navigation -->
+<aside class="h-screen w-72 flex-col fixed left-0 top-0 bg-surface-container-low z-20 flex p-4 space-y-2 border-r border-outline-variant/10">
+<div class="px-4 py-6 mb-4">
+<h1 class="font-headline font-bold text-2xl text-primary">Comailer</h1>
+<p class="font-body text-label-large text-on-surface-variant/70">CohortIX mail suit</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-xl group duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body text-label-large">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-xl group duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="font-body text-label-large">SMTP Configs</span>
+</a>
+<!-- Active Tab: Templates -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-secondary-container bg-secondary-container rounded-xl font-bold duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="font-body text-label-large">Templates</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-xl group duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-body text-label-large">Compose</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 transition-colors rounded-xl group duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body text-label-large">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto p-4 bg-surface-container-highest/30 rounded-xl space-y-3">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-tertiary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">workspace_premium</span>
+</div>
+<div>
+<p class="text-xs font-bold text-tertiary uppercase tracking-wider">Free Plan</p>
+<p class="text-xs text-on-surface-variant">1,240 / 5,000 emails</p>
+</div>
+</div>
+<button class="w-full py-2 bg-primary text-on-primary rounded-lg font-bold text-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
+                Upgrade Plan
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-72 min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="w-full h-16 sticky top-0 bg-background/80 backdrop-blur-md z-10 flex items-center justify-between px-8">
+<div class="flex items-center gap-6 w-1/2">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-body-medium focus:ring-2 focus:ring-primary/20 transition-all outline-none" placeholder="Search templates..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-px bg-outline-variant/30 mx-2"></div>
+<img class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/10" data-alt="A professional and friendly headshot of a software administrator in a well-lit home office, featuring soft natural lighting and warm earthy tones consistent with the Terra design system. The person has a kind expression, wearing a forest green organic cotton shirt, emphasizing a grounded and human-centric tech environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDW_iEpN48yASfP9QMKvlt4ASQIi0jJ-TTQxC_kze9D7tfW4NFggVXs9M1e2hXSnsv40C1VgsUbeMJknUxKZypA9FKQJkPztueEqsWMTDoUOBJwRxvMYxMJsogTeLUd-KI4hmw5204ymELCk4Bvm8NUeE9tWHLJNzUBRj_CU3QRruLJ_SdzRhcJ8SGe-FdmeLcufrNEigItvahlZ9egCC1c6lKa2mNmXNhZMNqdDwHujG-cM4PX4Jk-tcto50_Sq0LxmPP6kdNRoI"/>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-8 flex-1">
+<!-- Header Section -->
+<div class="flex items-end justify-between mb-10">
+<div>
+<nav class="flex items-center gap-2 text-sm text-on-surface-variant/60 mb-2">
+<span>Dashboard</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-on-surface-variant font-medium">Templates</span>
+</nav>
+<h2 class="text-4xl font-headline font-bold text-on-surface tracking-tight">Campaign Assets</h2>
+<p class="text-on-surface-variant mt-2 font-body max-w-xl">Manage your omnichannel communication templates with <b>Comailer</b>. Design responsive HTML emails or optimized plain text notifications.</p>
+</div>
+<div class="flex items-center gap-3">
+<!-- Segmented Filter -->
+<div class="flex bg-surface-container-high p-1 rounded-xl">
+<button class="px-4 py-2 bg-surface text-primary font-bold rounded-lg text-sm shadow-sm transition-all">All</button>
+<button class="px-4 py-2 text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">HTML</button>
+<button class="px-4 py-2 text-on-surface-variant hover:text-primary transition-colors text-sm font-medium">Text</button>
+</div>
+<button class="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+<span>Create New Template</span>
+</button>
+</div>
+</div>
+<!-- Templates Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+<!-- Template Card 1 -->
+<div class="stagger-item group bg-surface-container-low rounded-xl overflow-hidden template-card-shadow border border-transparent hover:border-primary/20 transition-all">
+<div class="relative aspect-[4/3] overflow-hidden">
+<div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors z-[1]"></div>
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A clean, high-fidelity email template preview showing a welcome message with organic green floral accents. The layout is minimalist with a clear call-to-action button in forest green, set against a warm cream background, embodying a rooted and calm aesthetic for a premium lifestyle brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLzUnpww9B7vBW39vVXGXERKpo2eR1594fLoC80VvY0ozAzAT8Pqui7NidKSiwY56ls_dosnG-QiBztePoKh3zTkOqeU9ouMo5YN7yYFwXDnOUJ88QciF6fp2tYc7KHAzl9xYcYKYkes3nvvFlgGLi_b5i3nvh_QBHKdUuDOLc5veNzT2gpuBqHhjLFsS9dVpV0hC2OXhoaTeWWpZUuvunFoyUUo9GLhWXkacKc9CjAfPxjaqec0bSe39XqT-ZmCD_Z1I69eD0Yy8"/>
+<div class="absolute top-4 left-4 z-[2]">
+<span class="px-3 py-1 bg-primary-container text-on-primary-fixed-variant text-xs font-bold rounded-full uppercase tracking-tighter">HTML</span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-xl font-bold text-on-surface leading-tight">Spring Newsletter 2024</h3>
+<div class="flex gap-1">
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors" title="Edit">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors" title="Clone">
+<span class="material-symbols-outlined text-lg">content_copy</span>
+</button>
+<button class="p-1.5 text-error hover:bg-error-container rounded-md transition-colors" title="Delete">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant font-medium mb-4 italic truncate">Subject: Explore our new seasonal collection 🌿</p>
+<div class="flex items-center justify-between mt-6 pt-4 border-t border-outline-variant/20">
+<span class="text-xs text-on-surface-variant/60 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                                Updated 2h ago
+                            </span>
+<span class="text-xs font-bold text-tertiary">Used in 12 Campaigns</span>
+</div>
+</div>
+</div>
+<!-- Template Card 2 -->
+<div class="stagger-item group bg-surface-container-low rounded-xl overflow-hidden template-card-shadow border border-transparent hover:border-primary/20 transition-all">
+<div class="relative aspect-[4/3] overflow-hidden">
+<div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors z-[1]"></div>
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="A sophisticated password reset email template with a focused, centralized layout. The design uses warm cream tones and a muted amber tertiary accent for the verification code block. The typography is clean and legible, maintaining a sense of calm and security through rooted green branding elements." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcu7MOXexBF12UGDdKB9oBjEg6pEPs1ra9izCBZLt6NYoRBaOPYmBmGRp2CV2svMmu1OYLezgr0LgNUQ4VGAcEGHRCNeCgQD8wNpvvHmr8wnx3jkyjO3X_E3Wc1Kh9WqGjrP9xuOWUf0jIbHuKgxKFO4xX9ZtRk8uokWwm5_bTbKPDA8tCPP9Hp8EvaFVL5_c47TOXvKeo3mdeVYFYUluCuPjcGUeIadRL07-ww7VCPah_MoewXH4CQSWZsSprS845D4G4CWxs2_I"/>
+<div class="absolute top-4 left-4 z-[2]">
+<span class="px-3 py-1 bg-primary-container text-on-primary-fixed-variant text-xs font-bold rounded-full uppercase tracking-tighter">HTML</span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-xl font-bold text-on-surface leading-tight">Transactional: Password Reset</h3>
+<div class="flex gap-1">
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors">
+<span class="material-symbols-outlined text-lg">content_copy</span>
+</button>
+<button class="p-1.5 text-error hover:bg-error-container rounded-md transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant font-medium mb-4 italic truncate">Subject: Security: Reset your password</p>
+<div class="flex items-center justify-between mt-6 pt-4 border-t border-outline-variant/20">
+<span class="text-xs text-on-surface-variant/60 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                                Updated Dec 12, 2023
+                            </span>
+<span class="text-xs font-bold text-tertiary">Used in System Flows</span>
+</div>
+</div>
+</div>
+<!-- Template Card 3 -->
+<div class="stagger-item group bg-surface-container-low rounded-xl overflow-hidden template-card-shadow border border-transparent hover:border-primary/20 transition-all">
+<div class="relative aspect-[4/3] overflow-hidden bg-surface-container-high flex flex-col items-center justify-center p-8">
+<div class="w-full h-full bg-surface-container border-2 border-dashed border-outline-variant/50 rounded-lg flex flex-col items-center justify-center text-center space-y-2 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant/30">subject</span>
+<p class="text-xs font-bold text-on-surface-variant/40 uppercase tracking-widest">Plain Text View</p>
+</div>
+<div class="absolute top-4 left-4 z-[2]">
+<span class="px-3 py-1 bg-tertiary-container text-on-tertiary-container text-xs font-bold rounded-full uppercase tracking-tighter">TEXT</span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-xl font-bold text-on-surface leading-tight">Alert: System Maintenance</h3>
+<div class="flex gap-1">
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors">
+<span class="material-symbols-outlined text-lg">content_copy</span>
+</button>
+<button class="p-1.5 text-error hover:bg-error-container rounded-md transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant font-medium mb-4 italic truncate">Subject: Scheduled maintenance notification</p>
+<div class="flex items-center justify-between mt-6 pt-4 border-t border-outline-variant/20">
+<span class="text-xs text-on-surface-variant/60 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                                Updated 3 days ago
+                            </span>
+<span class="text-xs font-bold text-tertiary">Used in 1 Campaign</span>
+</div>
+</div>
+</div>
+<!-- Template Card 4 -->
+<div class="stagger-item group bg-surface-container-low rounded-xl overflow-hidden template-card-shadow border border-transparent hover:border-primary/20 transition-all">
+<div class="relative aspect-[4/3] overflow-hidden">
+<div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors z-[1]"></div>
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="An elegant e-commerce abandoned cart email template preview. Features a soft beige and earth-toned color palette with a prominent section for product photos and a warm 'Finish your purchase' button. The lighting is bright and cheerful, evoking a cozy shopping experience, with forest green branding anchors throughout the footer." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhjW2xsxD7Jai2SOhXh0_tnfR4t5tuM4p9BROR151_sHRPLoNxfpZ5heDYkjtFGerWa_v7zpapbU75Km2xXrSxGV1Kj0ojtub_5eW9W2NZiE-v7kxa9BGBgTQT1taZ-ddNAQNSQv6pP9wg1EsUDKPtV5gnt6CDGN_k3JQTQNLeC1Dd17ks3D4gJBtENrLfsMO7Ujx8nnKabGMriaNs196Y2E_CbBF-ulNoE9dJm8Zuxm_L2yEmYYgypJ7o5wVOBvr2zRD-uiBSbAk"/>
+<div class="absolute top-4 left-4 z-[2]">
+<span class="px-3 py-1 bg-primary-container text-on-primary-fixed-variant text-xs font-bold rounded-full uppercase tracking-tighter">HTML</span>
+</div>
+</div>
+<div class="p-6">
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-xl font-bold text-on-surface leading-tight">Abandoned Cart Recovery</h3>
+<div class="flex gap-1">
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-variant rounded-md transition-colors">
+<span class="material-symbols-outlined text-lg">content_copy</span>
+</button>
+<button class="p-1.5 text-error hover:bg-error-container rounded-md transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span>
+</button>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant font-medium mb-4 italic truncate">Subject: You left something special behind...</p>
+<div class="flex items-center justify-between mt-6 pt-4 border-t border-outline-variant/20">
+<span class="text-xs text-on-surface-variant/60 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">schedule</span>
+                                Updated Nov 30, 2023
+                            </span>
+<span class="text-xs font-bold text-tertiary">Used in 5 Campaigns</span>
+</div>
+</div>
+</div>
+<!-- Create New Card (Empty State Trigger) -->
+<button class="stagger-item group bg-surface-container-low/50 rounded-xl border-2 border-dashed border-outline-variant/40 flex flex-col items-center justify-center p-8 hover:bg-surface-container hover:border-primary/40 transition-all min-h-[400px]">
+<div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl text-primary">add_circle</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface mb-1">New Template</h3>
+<p class="text-sm text-on-surface-variant max-w-[200px]">Start from scratch or choose a pre-made layout.</p>
+</button>
+</div>
+<!-- Pagination/Footer Stats -->
+<div class="mt-12 flex items-center justify-between text-on-surface-variant/70 text-sm">
+<p>Showing 4 of 24 templates</p>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary font-bold">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container transition-colors">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual FAB -->
+<button class="fixed bottom-8 right-8 w-16 h-16 bg-tertiary text-on-tertiary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 hover:rotate-12 transition-all active:scale-95 group z-30" title="Quick Template Create">
+<span class="material-symbols-outlined text-3xl group-hover:scale-125 transition-transform">magic_button</span>
+</button>
+<script>
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        if (searchInput) {
+            searchInput.addEventListener('focus', () => {
+                searchInput.parentElement.classList.add('ring-2', 'ring-primary/20');
+            });
+            searchInput.addEventListener('blur', () => {
+                searchInput.parentElement.classList.remove('ring-2', 'ring-primary/20');
+            });
+        }
+    </script>
+</body></html>
