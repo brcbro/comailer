@@ -21,11 +21,20 @@ npx wrangler secret put DATABASE_URL
 npx wrangler secret put APP_URL          # https://comailer.cohortix.in
 npx wrangler secret put ENCRYPTION_KEY
 npx wrangler secret put SESSION_SECRET
-npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put ADMIN_EMAIL      # bootstrap admin login email
+npx wrangler secret put ADMIN_PASSWORD   # seeds the first ADMIN user only
 npx wrangler secret put CRON_SECRET      # random string; protects /api/drip/tick
 ```
 
 Or run: `powershell -File scripts/set-cf-secrets.ps1` (skips APP_URL if still localhost in `.env`).
+
+## Auth (multi-tenant)
+
+- Login at `/login` with **email + password** (not the shared password alone).
+- On first login, if no ADMIN user exists, one is created from `ADMIN_EMAIL` + `ADMIN_PASSWORD`.
+- After that, manage clients under **Clients** in the sidebar (admin only). Each client gets their own organization and login; they only see their SMTPs, templates, compose, drip, and analytics.
+- Admins use the **Working as client** switcher to view/create data for a specific client.
+- `ADMIN_PASSWORD` is unused for day-to-day login once the admin user exists — reset via the database or recreate the user if needed.
 
 ## Database (Neon PostgreSQL)
 
@@ -40,7 +49,7 @@ curl https://comailer.cohortix.in/api/health
 # {"ok":true,"database":"connected",...}
 ```
 
-Login at `/login` with your `ADMIN_PASSWORD` secret.
+Login at `/login` with your admin email and password.
 
 ## Notes
 

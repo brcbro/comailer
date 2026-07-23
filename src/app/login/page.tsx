@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
@@ -37,7 +38,6 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-6 sm:p-12 overflow-hidden bg-background text-on-background selection:bg-primary/20">
-      {/* Organic Animated Background Blobs */}
       <div className="fixed inset-0 -z-10 overflow-hidden bg-background">
         <div className="absolute top-[-10%] left-[-5%] w-[60%] h-[60%] bg-primary/10 blur-[100px] rounded-full animate-pulse"></div>
         <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-tertiary/10 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: "-3s" }}></div>
@@ -45,7 +45,6 @@ export default function LoginPage() {
       </div>
 
       <main className="w-full max-w-md animate-fade-in-up">
-        {/* Branding Header */}
         <div className="text-center mb-8 space-y-2">
           <div className="inline-flex items-center justify-center p-3.5 bg-primary/10 rounded-2xl mb-2">
             <span className="material-symbols-outlined text-primary text-4xl">
@@ -60,13 +59,35 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Login Glass Card */}
         <div className="glass rounded-2xl p-8 sm:p-10 shadow-xl border border-outline-variant/30">
-          <form onSubmit={onSubmit} className="space-y-6">
-            {/* Password Field */}
+          <form onSubmit={onSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-on-surface-variant px-1">
+                Email
+              </label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="material-symbols-outlined text-on-surface-variant group-focus-within:text-primary transition-colors">
+                    mail
+                  </span>
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoFocus
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  className="block w-full pl-11 pr-4 py-3.5 bg-surface-container-low border border-outline-variant/30 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-surface-container-lowest transition-all text-on-surface placeholder:text-on-surface-variant/40 text-sm"
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-semibold text-on-surface-variant px-1">
-                Admin Password
+                Password
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -78,7 +99,6 @@ export default function LoginPage() {
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  autoFocus
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -104,7 +124,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}

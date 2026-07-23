@@ -1,9 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { orgWhere, resolveOrganizationId } from "@/lib/tenant";
 
 export const revalidate = 0;
 
 export default async function DashboardPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const organizationId = await resolveOrganizationId(session, { requireOrg: false });
+  const scope = orgWhere(organizationId);
+
   const [
     smtpCount,
     templateCount,
@@ -12,15 +21,22 @@ export default async function DashboardPage() {
     openCount,
     clickCount,
   ] = await Promise.all([
-    prisma.smtpConfig.count(),
-    prisma.template.count(),
-    prisma.campaign.count(),
-    prisma.recipient.count({ where: { status: "sent" } }),
-    prisma.trackingEvent.count({ where: { type: "OPEN" } }),
-    prisma.trackingEvent.count({ where: { type: "CLICK" } }),
+    prisma.smtpConfig.count({ where: scope }),
+    prisma.template.count({ where: scope }),
+    prisma.campaign.count({ where: scope }),
+    prisma.recipient.count({
+      where: { status: "sent", campaign: scope },
+    }),
+    prisma.trackingEvent.count({
+      where: { type: "OPEN", recipient: { campaign: scope } },
+    }),
+    prisma.trackingEvent.count({
+      where: { type: "CLICK", recipient: { campaign: scope } },
+    }),
   ]);
 
   const recentCampaigns = await prisma.campaign.findMany({
+    where: scope,
     take: 5,
     orderBy: { createdAt: "desc" },
     include: {

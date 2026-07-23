@@ -22,6 +22,7 @@ function sleep(ms: number) {
 
 async function ensureAnalyticsCampaign(drip: {
   id: string;
+  organizationId: string;
   name: string;
   smtpConfigId: string;
   senderId: string;
@@ -35,6 +36,7 @@ async function ensureAnalyticsCampaign(drip: {
 
   const campaign = await prisma.campaign.create({
     data: {
+      organizationId: drip.organizationId,
       name: `[Drip] ${drip.name}`,
       smtpConfigId: drip.smtpConfigId,
       senderId: drip.senderId,

@@ -1,15 +1,25 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireSession } from "@/lib/auth";
+import {
+  orgWhere,
+  resolveOrganizationId,
+  tenantErrorResponse,
+} from "@/lib/tenant";
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ smtpId: string }> }
 ) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
+    const organizationId = await resolveOrganizationId(auth.session, { requireOrg: false });
     const { smtpId } = await params;
 
-    const smtpConfig = await prisma.smtpConfig.findUnique({
-      where: { id: smtpId },
+    const smtpConfig = await prisma.smtpConfig.findFirst({
+      where: { id: smtpId, ...orgWhere(organizationId) },
     });
 
     if (!smtpConfig) {
@@ -18,7 +28,7 @@ export async function GET(
 
     // Fetch campaigns for this SMTP config
     const campaigns = await prisma.campaign.findMany({
-      where: { smtpConfigId: smtpId },
+      where: { smtpConfigId: smtpId, ...orgWhere(organizationId) },
       include: {
         recipients: {
           include: {
@@ -182,6 +192,8 @@ export async function GET(
       chartData,
     });
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Failed to load analytics";
     return NextResponse.json({ error: message }, { status: 500 });
   }

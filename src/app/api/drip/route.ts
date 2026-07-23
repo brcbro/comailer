@@ -1,10 +1,26 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parseRecipientsText } from "@/lib/parse-recipients";
+import { requireSession } from "@/lib/auth";
+import {
+  orgWhere,
+  readRequestedOrgId,
+  resolveOrganizationId,
+  tenantErrorResponse,
+} from "@/lib/tenant";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
+    const organizationId = await resolveOrganizationId(auth.session, {
+      requestedOrgId: readRequestedOrgId(request),
+      requireOrg: false,
+    });
+
     const campaigns = await prisma.dripCampaign.findMany({
+      where: orgWhere(organizationId),
       orderBy: { createdAt: "desc" },
       include: {
         smtpConfig: { select: { id: true, name: true, domain: true } },
@@ -41,6 +57,8 @@ export async function GET() {
 
     return NextResponse.json(withStats);
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Failed to list drip campaigns";
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -48,6 +66,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
     const body = await request.json();
     const {
       name,
@@ -61,6 +82,11 @@ export async function POST(request: Request) {
       batchSize,
       recipients,
     } = body;
+
+    const organizationId = await resolveOrganizationId(auth.session, {
+      requestedOrgId: readRequestedOrgId(request, body),
+      requireOrg: true,
+    });
 
     if (!name || !smtpConfigId || !senderId || !subject || !emailBody) {
       return NextResponse.json(
@@ -83,7 +109,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const smtp = await prisma.smtpConfig.findUnique({ where: { id: smtpConfigId } });
+    const smtp = await prisma.smtpConfig.findFirst({
+      where: { id: smtpConfigId, ...orgWhere(organizationId) },
+    });
     const sender = await prisma.sender.findUnique({ where: { id: senderId } });
     if (!smtp || !sender || sender.smtpConfigId !== smtpConfigId) {
       return NextResponse.json({ error: "Invalid SMTP or sender" }, { status: 400 });
@@ -91,6 +119,7 @@ export async function POST(request: Request) {
 
     const campaign = await prisma.dripCampaign.create({
       data: {
+        organizationId: organizationId!,
         name,
         smtpConfigId,
         senderId,
@@ -126,6 +155,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(full, { status: 201 });
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Failed to create drip campaign";
     return NextResponse.json({ error: message }, { status: 500 });
   }

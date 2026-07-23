@@ -3,6 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { decrypt } from "@/lib/crypto";
 import nodemailer from "nodemailer";
 import { resolveBounceAddress } from "@/lib/mailer";
+import { requireSession } from "@/lib/auth";
+import {
+  orgWhere,
+  resolveOrganizationId,
+  tenantErrorResponse,
+} from "@/lib/tenant";
 
 function getZeptoApiUrl(region: string = "com"): string {
   switch (region.toLowerCase()) {
@@ -22,8 +28,14 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
+    const organizationId = await resolveOrganizationId(auth.session, { requireOrg: false });
     const { id } = await params;
-    const config = await prisma.smtpConfig.findUnique({ where: { id } });
+    const config = await prisma.smtpConfig.findFirst({
+      where: { id, ...orgWhere(organizationId) },
+    });
 
     if (!config) {
       return NextResponse.json({ error: "Config not found" }, { status: 404 });
@@ -113,6 +125,8 @@ export async function POST(
       });
     }
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Connection failed";
     return NextResponse.json({ success: false, message }, { status: 400 });
   }

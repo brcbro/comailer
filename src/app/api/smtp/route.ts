@@ -1,18 +1,34 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { encrypt } from "@/lib/crypto";
+import { requireSession } from "@/lib/auth";
+import {
+  orgWhere,
+  readRequestedOrgId,
+  resolveOrganizationId,
+  tenantErrorResponse,
+} from "@/lib/tenant";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
+    const organizationId = await resolveOrganizationId(auth.session, {
+      requestedOrgId: readRequestedOrgId(request),
+      requireOrg: false,
+    });
+
     const configs = await prisma.smtpConfig.findMany({
+      where: orgWhere(organizationId),
       include: {
         senders: true,
+        organization: { select: { id: true, name: true } },
         _count: { select: { campaigns: true } },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    // Mask sensitive fields
     const safeConfigs = configs.map((c) => ({
       ...c,
       hasPassword: !!c.passwordEnc,
@@ -23,6 +39,8 @@ export async function GET() {
 
     return NextResponse.json(safeConfigs);
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Failed to fetch SMTP configs";
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -30,8 +48,16 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
     const body = await request.json();
     const { name, mode, domain, bounceAddress, region, host, port, secure, username, password, apiToken } = body;
+
+    const organizationId = await resolveOrganizationId(auth.session, {
+      requestedOrgId: readRequestedOrgId(request, body),
+      requireOrg: true,
+    });
 
     if (!name || !domain) {
       return NextResponse.json({ error: "Name and domain are required" }, { status: 400 });
@@ -49,6 +75,7 @@ export async function POST(request: Request) {
 
     const config = await prisma.smtpConfig.create({
       data: {
+        organizationId: organizationId!,
         name,
         mode: mode || "SMTP",
         domain,
@@ -65,6 +92,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(config, { status: 201 });
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Failed to create SMTP config";
     return NextResponse.json({ error: message }, { status: 500 });
   }

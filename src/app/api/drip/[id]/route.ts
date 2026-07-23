@@ -1,14 +1,30 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireSession } from "@/lib/auth";
+import {
+  orgWhere,
+  resolveOrganizationId,
+  tenantErrorResponse,
+} from "@/lib/tenant";
+
+async function findScopedDrip(id: string, organizationId: string | null) {
+  return prisma.dripCampaign.findFirst({
+    where: { id, ...orgWhere(organizationId) },
+  });
+}
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
+    const organizationId = await resolveOrganizationId(auth.session, { requireOrg: false });
     const { id } = await params;
-    const campaign = await prisma.dripCampaign.findUnique({
-      where: { id },
+    const campaign = await prisma.dripCampaign.findFirst({
+      where: { id, ...orgWhere(organizationId) },
       include: {
         smtpConfig: { select: { id: true, name: true, domain: true } },
         sender: { select: { id: true, email: true, displayName: true } },
@@ -46,6 +62,8 @@ export async function GET(
       sampleRecipients: recent,
     });
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Failed to load campaign";
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -56,9 +74,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
+    const organizationId = await resolveOrganizationId(auth.session, { requireOrg: false });
     const { id } = await params;
     const body = await request.json();
-    const existing = await prisma.dripCampaign.findUnique({ where: { id } });
+    const existing = await findScopedDrip(id, organizationId);
     if (!existing) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -107,6 +129,8 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Failed to update";
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -117,10 +141,21 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
+    const organizationId = await resolveOrganizationId(auth.session, { requireOrg: false });
     const { id } = await params;
+    const existing = await findScopedDrip(id, organizationId);
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     await prisma.dripCampaign.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Failed to delete";
     return NextResponse.json({ error: message }, { status: 500 });
   }

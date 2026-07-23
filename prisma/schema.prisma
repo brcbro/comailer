@@ -8,137 +8,184 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model SmtpConfig {
-  id            String   @id @default(cuid())
-  name          String
-  mode          String   // "SMTP" | "API"
-  domain        String
-  bounceAddress String?  // e.g. bounce@bounce.example.com from ZeptoMail Domains
-  region        String   @default("com") // com | eu | in | com.cn
-  host          String?
-  port          Int?
-  secure        Boolean  @default(false)
-  username      String?
-  passwordEnc   String?
-  apiTokenEnc   String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  senders       Sender[]
-  campaigns     Campaign[]
-  dripCampaigns DripCampaign[]
-}
-
-model Sender {
-  id           String   @id @default(cuid())
-  smtpConfigId String
-  smtpConfig   SmtpConfig @relation(fields: [smtpConfigId], references: [id], onDelete: Cascade)
-  email        String
-  displayName  String?
-  createdAt    DateTime @default(now())
-  campaigns    Campaign[]
-  dripCampaigns DripCampaign[]
-}
-
-model Template {
+model Organization {
   id        String   @id @default(cuid())
   name      String
-  subject   String
-  type      String   // "TEXT" | "HTML"
-  body      String
+  slug      String   @unique
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  users     User[]
+  smtpConfigs SmtpConfig[]
+  templates Template[]
   campaigns Campaign[]
   dripCampaigns DripCampaign[]
 }
 
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  name           String?
+  passwordHash   String
+  /// ADMIN | CLIENT
+  role           String
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([role])
+}
+
+model SmtpConfig {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  mode           String // "SMTP" | "API"
+  domain         String
+  bounceAddress  String? // e.g. bounce@bounce.example.com from ZeptoMail Domains
+  region         String       @default("com") // com | eu | in | com.cn
+  host           String?
+  port           Int?
+  secure         Boolean      @default(false)
+  username       String?
+  passwordEnc    String?
+  apiTokenEnc    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  senders        Sender[]
+  campaigns      Campaign[]
+  dripCampaigns  DripCampaign[]
+
+  @@index([organizationId])
+}
+
+model Sender {
+  id            String      @id @default(cuid())
+  smtpConfigId  String
+  smtpConfig    SmtpConfig  @relation(fields: [smtpConfigId], references: [id], onDelete: Cascade)
+  email         String
+  displayName   String?
+  createdAt     DateTime    @default(now())
+  campaigns     Campaign[]
+  dripCampaigns DripCampaign[]
+}
+
+model Template {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  subject        String
+  type           String // "TEXT" | "HTML"
+  body           String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  campaigns      Campaign[]
+  dripCampaigns  DripCampaign[]
+
+  @@index([organizationId])
+}
+
 model Campaign {
-  id           String   @id @default(cuid())
-  name         String
-  smtpConfigId String
-  smtpConfig   SmtpConfig @relation(fields: [smtpConfigId], references: [id], onDelete: Cascade)
-  senderId     String?
-  sender       Sender?   @relation(fields: [senderId], references: [id], onDelete: SetNull)
-  templateId   String?
-  template     Template? @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  subject      String
-  bodyType     String
-  body         String
-  status       String    @default("draft")
-  createdAt    DateTime  @default(now())
-  recipients   Recipient[]
-  dripCampaign DripCampaign?
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  smtpConfigId   String
+  smtpConfig     SmtpConfig   @relation(fields: [smtpConfigId], references: [id], onDelete: Cascade)
+  senderId       String?
+  sender         Sender?      @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  templateId     String?
+  template       Template?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  subject        String
+  bodyType       String
+  body           String
+  status         String       @default("draft")
+  createdAt      DateTime     @default(now())
+  recipients     Recipient[]
+  dripCampaign   DripCampaign?
+
+  @@index([organizationId])
 }
 
 model Recipient {
-  id          String   @id @default(cuid())
-  campaignId  String
-  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  email       String
-  name        String?
-  trackingId  String   @unique @default(cuid())
-  status      String   @default("pending")
-  error       String?
-  sentAt      DateTime?
-  createdAt   DateTime @default(now())
-  events      TrackingEvent[]
+  id            String         @id @default(cuid())
+  campaignId    String
+  campaign      Campaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  email         String
+  name          String?
+  trackingId    String         @unique @default(cuid())
+  status        String         @default("pending")
+  error         String?
+  sentAt        DateTime?
+  createdAt     DateTime       @default(now())
+  events        TrackingEvent[]
   dripRecipient DripRecipient?
 }
 
 model TrackingEvent {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   recipientId String
   recipient   Recipient @relation(fields: [recipientId], references: [id], onDelete: Cascade)
-  type        String   // "OPEN" | "CLICK"
+  type        String // "OPEN" | "CLICK"
   url         String?
   ip          String?
   userAgent   String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 }
 
 /// Throttled bulk send: import a list, toggle on/off, send up to dailyLimit per day.
 model DripCampaign {
-  id           String   @id @default(cuid())
-  name         String
-  smtpConfigId String
-  smtpConfig   SmtpConfig @relation(fields: [smtpConfigId], references: [id], onDelete: Cascade)
-  senderId     String
-  sender       Sender     @relation(fields: [senderId], references: [id])
-  templateId   String?
-  template     Template?  @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  smtpConfigId   String
+  smtpConfig     SmtpConfig   @relation(fields: [smtpConfigId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         Sender       @relation(fields: [senderId], references: [id])
+  templateId     String?
+  template       Template?    @relation(fields: [templateId], references: [id], onDelete: SetNull)
   /// Linked one-shot Campaign used for open/click analytics
-  campaignId   String?    @unique
-  campaign     Campaign?  @relation(fields: [campaignId], references: [id], onDelete: SetNull)
-  subject      String
-  bodyType     String     // "TEXT" | "HTML"
-  body         String
+  campaignId     String?      @unique
+  campaign       Campaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  subject        String
+  bodyType       String // "TEXT" | "HTML"
+  body           String
   /// paused | running | completed
-  status       String     @default("paused")
-  dailyLimit   Int        @default(100)
+  status         String       @default("paused")
+  dailyLimit     Int          @default(100)
   /// How many to send each worker tick (spread across the day)
-  batchSize    Int        @default(5)
-  sentToday    Int        @default(0)
+  batchSize      Int          @default(5)
+  sentToday      Int          @default(0)
   /// YYYY-MM-DD in server local time — resets sentToday when day changes
-  dayKey       String     @default("")
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  recipients   DripRecipient[]
+  dayKey         String       @default("")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  recipients     DripRecipient[]
+
+  @@index([organizationId])
 }
 
 model DripRecipient {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   dripCampaignId String
   dripCampaign   DripCampaign @relation(fields: [dripCampaignId], references: [id], onDelete: Cascade)
   email          String
   name           String?
-  position       Int      @default(0)
+  position       Int          @default(0)
   /// pending | sent | failed | skipped
-  status         String   @default("pending")
+  status         String       @default("pending")
   error          String?
   sentAt         DateTime?
   /// Linked tracked Recipient after a successful send
-  recipientId    String?  @unique
-  recipient      Recipient? @relation(fields: [recipientId], references: [id], onDelete: SetNull)
-  createdAt      DateTime @default(now())
+  recipientId    String?      @unique
+  recipient      Recipient?   @relation(fields: [recipientId], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
 
   @@index([dripCampaignId, status, position])
 }

@@ -1,110 +1,97 @@
 /**
- * Single-admin auth helpers.
- *
- * Uses the Web Crypto API (HMAC-SHA256) so the same code runs in the Edge
- * middleware runtime and in Node route handlers. The session is a signed,
- * self-contained token: `base64url(payload).base64url(signature)`.
+ * Multi-user auth helpers (ADMIN / CLIENT) — route-handler / server-component safe.
+ * Session crypto lives in session.ts so Edge middleware stays Prisma-free.
  */
 
-export const SESSION_COOKIE = "mailer_session";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import {
+  ORG_COOKIE,
+  SESSION_COOKIE,
+  createSessionToken,
+  hashPassword,
+  orgCookieOptions,
+  sessionCookieOptions,
+  slugify,
+  verifyPasswordHash,
+  verifySessionToken,
+  type SessionPayload,
+  type UserRole,
+} from "@/lib/session";
 
-const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
-
-export const sessionCookieOptions = {
-  httpOnly: true,
-  sameSite: "lax" as const,
-  secure:
-    process.env.NODE_ENV === "production" ||
-    (process.env.APP_URL || "").startsWith("https://"),
-  path: "/",
-  maxAge: SESSION_TTL_SECONDS,
+export {
+  ORG_COOKIE,
+  SESSION_COOKIE,
+  createSessionToken,
+  hashPassword,
+  orgCookieOptions,
+  sessionCookieOptions,
+  slugify,
+  verifyPasswordHash,
+  verifySessionToken,
+  type SessionPayload,
+  type UserRole,
 };
 
-function toBase64Url(bytes: Uint8Array): string {
-  let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+export { isAuthenticated } from "@/lib/session";
+
+/**
+ * Ensure at least one ADMIN user exists (bootstrap from ADMIN_EMAIL + ADMIN_PASSWORD).
+ * Safe to call on every login attempt.
+ */
+export async function ensureBootstrapAdmin(): Promise<void> {
+  const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+  if (adminCount > 0) return;
+
+  const email = (process.env.ADMIN_EMAIL || "admin@localhost")
+    .trim()
+    .toLowerCase()
+    .replace(/^["']|["']$/g, "");
+  const password = (process.env.ADMIN_PASSWORD || "changeme")
+    .trim()
+    .replace(/^["']|["']$/g, "");
+
+  const passwordHash = await hashPassword(password);
+  await prisma.user.create({
+    data: {
+      email,
+      name: "Admin",
+      passwordHash,
+      role: "ADMIN",
+      organizationId: null,
+      isActive: true,
+    },
+  });
 }
 
-function fromBase64Url(input: string): Uint8Array {
-  let s = input.replace(/-/g, "+").replace(/_/g, "/");
-  const pad = s.length % 4;
-  if (pad) s += "=".repeat(4 - pad);
-  const binary = atob(s);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
+export async function getSession(): Promise<SessionPayload | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  return verifySessionToken(token);
 }
 
-async function getKey(): Promise<CryptoKey> {
-  const secret =
-    (process.env.SESSION_SECRET || "").trim().replace(/^["']|["']$/g, "") ||
-    "session_secret_zeptomail_mailer_32bytes_key_super_secure";
-  return crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"],
-  );
-}
-
-async function sign(data: string): Promise<string> {
-  const key = await getKey();
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(data));
-  return toBase64Url(new Uint8Array(sig));
-}
-
-/** Constant-time string comparison to avoid leaking length/content via timing. */
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a === b) return true;
-  const aBytes = new TextEncoder().encode(a);
-  const bBytes = new TextEncoder().encode(b);
-  if (aBytes.length !== bBytes.length) return false;
-  let diff = 0;
-  for (let i = 0; i < aBytes.length; i++) diff |= aBytes[i] ^ bBytes[i];
-  return diff === 0;
-}
-
-/** Verify the submitted password against ADMIN_PASSWORD. */
-export function verifyPassword(input: string): boolean {
-  const rawExpected = process.env.ADMIN_PASSWORD || "changeme";
-  const expected = rawExpected.trim().replace(/^["']|["']$/g, "");
-  const cleanInput = (input || "").trim().replace(/^["']|["']$/g, "");
-
-  if (!expected) return false;
-  return timingSafeEqual(cleanInput, expected);
-}
-
-/** Create a signed, expiring session token. */
-export async function createSessionToken(): Promise<string> {
-  const payloadObj = { exp: Date.now() + SESSION_TTL_SECONDS * 1000 };
-  const payload = toBase64Url(new TextEncoder().encode(JSON.stringify(payloadObj)));
-  const signature = await sign(payload);
-  return `${payload}.${signature}`;
-}
-
-/** Verify a session token's signature and expiry. */
-export async function verifySessionToken(token?: string | null): Promise<boolean> {
-  if (!token) return false;
-  const [payload, signature] = token.split(".");
-  if (!payload || !signature) return false;
-
-  let expected: string;
-  try {
-    expected = await sign(payload);
-  } catch {
-    return false;
-  }
-  if (!timingSafeEqual(signature, expected)) return false;
-
-  try {
-    const data = JSON.parse(new TextDecoder().decode(fromBase64Url(payload))) as {
-      exp?: number;
+export async function requireSession(): Promise<
+  { session: SessionPayload } | { error: NextResponse }
+> {
+  const session = await getSession();
+  if (!session) {
+    return {
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
     };
-    if (typeof data.exp !== "number" || Date.now() > data.exp) return false;
-    return true;
-  } catch {
-    return false;
   }
+  return { session };
+}
+
+export async function requireAdmin(): Promise<
+  { session: SessionPayload } | { error: NextResponse }
+> {
+  const result = await requireSession();
+  if ("error" in result) return result;
+  if (result.session.role !== "ADMIN") {
+    return {
+      error: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+    };
+  }
+  return result;
 }

@@ -1,10 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+import { orgWhere, resolveOrganizationId } from "@/lib/tenant";
 
 export const revalidate = 0;
 
 export default async function AnalyticsOverviewPage() {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const organizationId = await resolveOrganizationId(session, { requireOrg: false });
+
   const configs = await prisma.smtpConfig.findMany({
+    where: orgWhere(organizationId),
     include: {
       campaigns: {
         include: {

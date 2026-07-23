@@ -1,16 +1,23 @@
 import { Sidebar } from "@/components/sidebar";
 import Link from "next/link";
+import { getSession } from "@/lib/auth";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getSession();
+  const label =
+    session?.role === "ADMIN"
+      ? "Admin"
+      : session?.name || session?.email?.split("@")[0] || "User";
+  const initial = (label[0] || "U").toUpperCase();
+
   return (
     <div className="min-h-screen bg-background text-on-background">
       <Sidebar />
 
-      {/* Top AppBar */}
       <header className="fixed top-0 left-72 right-0 h-16 flex items-center justify-between px-8 bg-background/80 backdrop-blur-md z-40 border-b border-outline-variant/20">
         <div className="flex items-center flex-1 max-w-md">
           <div className="relative w-full">
@@ -41,9 +48,7 @@ export default function DashboardLayout({
               className="p-2 rounded-full hover:bg-surface-variant/50 hover:text-primary transition-colors cursor-pointer"
               title="Compose Campaign"
             >
-              <span className="material-symbols-outlined text-xl">
-                send
-              </span>
+              <span className="material-symbols-outlined text-xl">send</span>
             </Link>
           </div>
 
@@ -51,16 +56,15 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-2.5 bg-surface-container-low px-3 py-1.5 rounded-full border border-outline-variant/20">
             <div className="size-7 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
-              A
+              {initial}
             </div>
-            <span className="text-xs font-semibold text-on-surface pr-1">
-              Admin
+            <span className="text-xs font-semibold text-on-surface pr-1 max-w-[120px] truncate">
+              {label}
             </span>
           </div>
         </div>
       </header>
 
-      {/* Main Content View */}
       <main className="pl-72 pt-16 min-h-screen">
         <div className="mx-auto max-w-[1500px] p-8">{children}</div>
       </main>

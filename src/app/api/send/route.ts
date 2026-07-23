@@ -3,6 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { personalize, prepareTrackedBody } from "@/lib/tracking";
 import { sendEmail } from "@/lib/mailer";
 import { parseRecipientsText } from "@/lib/parse-recipients";
+import { requireSession } from "@/lib/auth";
+import {
+  orgWhere,
+  readRequestedOrgId,
+  resolveOrganizationId,
+  tenantErrorResponse,
+} from "@/lib/tenant";
 
 interface RecipientInput {
   email: string;
@@ -11,6 +18,9 @@ interface RecipientInput {
 
 export async function POST(request: Request) {
   try {
+    const auth = await requireSession();
+    if ("error" in auth) return auth.error;
+
     const body = await request.json();
     const {
       campaignName,
@@ -23,6 +33,11 @@ export async function POST(request: Request) {
       recipients: recipientsInput,
     } = body;
 
+    const organizationId = await resolveOrganizationId(auth.session, {
+      requestedOrgId: readRequestedOrgId(request, body),
+      requireOrg: true,
+    });
+
     if (!campaignName || !smtpConfigId || !senderId || !subject || !emailBody) {
       return NextResponse.json(
         { error: "Campaign name, SMTP config, Sender, subject, and body are required." },
@@ -30,22 +45,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Fetch SMTP Config & Sender
-    const smtpConfig = await prisma.smtpConfig.findUnique({
-      where: { id: smtpConfigId },
+    const smtpConfig = await prisma.smtpConfig.findFirst({
+      where: { id: smtpConfigId, ...orgWhere(organizationId) },
     });
     const sender = await prisma.sender.findUnique({
       where: { id: senderId },
     });
 
-    if (!smtpConfig || !sender) {
+    if (!smtpConfig || !sender || sender.smtpConfigId !== smtpConfigId) {
       return NextResponse.json(
         { error: "Invalid SMTP Config or Sender selected." },
         { status: 400 }
       );
     }
 
-    // 2. Parse Recipients input
     let recipientList: RecipientInput[] = [];
     if (Array.isArray(recipientsInput)) {
       recipientList = recipientsInput.filter((r) => r && r.email && r.email.includes("@"));
@@ -60,9 +73,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Create Campaign
     const campaign = await prisma.campaign.create({
       data: {
+        organizationId: organizationId!,
         name: campaignName,
         smtpConfigId,
         senderId,
@@ -78,9 +91,7 @@ export async function POST(request: Request) {
     let failureCount = 0;
     const sendResults: Array<{ email: string; success: boolean; error?: string }> = [];
 
-    // 4. Send emails to recipients sequentially
     for (const rec of recipientList) {
-      // Create recipient record
       const dbRecipient = await prisma.recipient.create({
         data: {
           campaignId: campaign.id,
@@ -129,7 +140,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update campaign status
     await prisma.campaign.update({
       where: { id: campaign.id },
       data: { status: "completed" },
@@ -144,6 +154,8 @@ export async function POST(request: Request) {
       results: sendResults,
     });
   } catch (err: unknown) {
+    const te = tenantErrorResponse(err);
+    if (te) return te;
     const message = err instanceof Error ? err.message : "Send campaign failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }
