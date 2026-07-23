@@ -118,10 +118,16 @@ export async function PATCH(
     }
 
     if (body.action === "retryFailed") {
-      await prisma.dripRecipient.updateMany({
+      const failed = await prisma.dripRecipient.findMany({
         where: { dripCampaignId: id, status: "failed" },
-        data: { status: "pending", error: null },
+        select: { id: true },
       });
+      for (const row of failed) {
+        await prisma.dripRecipient.update({
+          where: { id: row.id },
+          data: { status: "pending", error: null },
+        });
+      }
       if (existing.status === "completed") {
         data.status = "paused";
       }

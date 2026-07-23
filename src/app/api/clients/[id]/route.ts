@@ -3,6 +3,27 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword, requireAdmin } from "@/lib/auth";
 import { parseAccessEndsAt } from "@/lib/access";
 
+const orgInclude = {
+  users: {
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+    },
+  },
+  _count: {
+    select: {
+      smtpConfigs: true,
+      templates: true,
+      campaigns: true,
+      dripCampaigns: true,
+    },
+  },
+} as const;
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -13,26 +34,7 @@ export async function GET(
   const { id } = await params;
   const org = await prisma.organization.findUnique({
     where: { id },
-    include: {
-      users: {
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          role: true,
-          isActive: true,
-          createdAt: true,
-        },
-      },
-      _count: {
-        select: {
-          smtpConfigs: true,
-          templates: true,
-          campaigns: true,
-          dripCampaigns: true,
-        },
-      },
-    },
+    include: orgInclude,
   });
 
   if (!org) {
@@ -84,22 +86,13 @@ export async function PATCH(
       }
     }
 
-    const org = await prisma.organization.update({
-      where: { id },
-      data,
-      include: {
-        users: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            isActive: true,
-            createdAt: true,
-          },
-        },
-      },
-    });
+    // Neon HTTP: no transactions — never use update+include (Prisma wraps that).
+    if (Object.keys(data).length > 0) {
+      await prisma.organization.update({
+        where: { id },
+        data,
+      });
+    }
 
     // Reset password for a user in this org
     if (body.resetUserId && body.newPassword) {
@@ -121,10 +114,16 @@ export async function PATCH(
       });
     }
 
-    // Toggle user active
+    // Toggle user active (avoid updateMany — also transactional on Neon HTTP)
     if (body.toggleUserId && typeof body.userIsActive === "boolean") {
-      await prisma.user.updateMany({
+      const user = await prisma.user.findFirst({
         where: { id: String(body.toggleUserId), organizationId: id },
+      });
+      if (!user) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+      await prisma.user.update({
+        where: { id: user.id },
         data: { isActive: body.userIsActive },
       });
     }
@@ -160,29 +159,10 @@ export async function PATCH(
 
     const refreshed = await prisma.organization.findUnique({
       where: { id },
-      include: {
-        users: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            isActive: true,
-            createdAt: true,
-          },
-        },
-        _count: {
-          select: {
-            smtpConfigs: true,
-            templates: true,
-            campaigns: true,
-            dripCampaigns: true,
-          },
-        },
-      },
+      include: orgInclude,
     });
 
-    return NextResponse.json(refreshed ?? org);
+    return NextResponse.json(refreshed);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to update client";
     return NextResponse.json({ error: message }, { status: 500 });
