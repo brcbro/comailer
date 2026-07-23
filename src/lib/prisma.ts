@@ -1,11 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
 
-// Use ws in Node.js environments where global WebSocket is not available
+// Safely set webSocketConstructor in Node environments where global WebSocket is missing
 if (typeof window === "undefined" && typeof WebSocket === "undefined") {
-  neonConfig.webSocketConstructor = ws;
+  try {
+    neonConfig.webSocketConstructor = require("ws");
+  } catch {
+    // Ignore in edge/serverless environments where global WebSocket exists natively
+  }
 }
 
 const globalForPrisma = globalThis as unknown as {
@@ -13,7 +16,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = (process.env.DATABASE_URL || "").trim().replace(/^["']|["']$/g, "");
 
   if (
     connectionString &&

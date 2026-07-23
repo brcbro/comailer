@@ -3,12 +3,15 @@ import crypto from "crypto";
 const ALGORITHM = "aes-256-cbc";
 
 function getKey(): Buffer {
-  const hexKey = process.env.ENCRYPTION_KEY;
+  const hexKey = (process.env.ENCRYPTION_KEY || "").trim().replace(/^["']|["']$/g, "");
   if (hexKey && hexKey.length === 64) {
     return Buffer.from(hexKey, "hex");
   }
   // Fallback 32-byte key derived from secret or fallback string if ENCRYPTION_KEY is missing/invalid
-  const fallbackSecret = hexKey || process.env.SESSION_SECRET || "default_fallback_encryption_secret_key_32";
+  const fallbackSecret =
+    hexKey ||
+    (process.env.SESSION_SECRET || "").trim().replace(/^["']|["']$/g, "") ||
+    "default_fallback_encryption_secret_key_32";
   return crypto.createHash("sha256").update(fallbackSecret).digest();
 }
 
