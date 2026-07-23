@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "build:cf": "prisma generate && opennextjs-cloudflare",
-    "deploy": "prisma generate && opennextjs-cloudflare && wrangler deploy",
-    "preview": "opennextjs-cloudflare && wrangler dev",
+    "build:cf": "prisma generate && opennextjs-cloudflare build",
+    "deploy": "prisma generate && opennextjs-cloudflare build && wrangler deploy",
+    "preview": "opennextjs-cloudflare build && wrangler dev",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate"
