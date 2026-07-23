@@ -118,16 +118,12 @@ export async function PATCH(
     }
 
     if (body.action === "retryFailed") {
-      const failed = await prisma.dripRecipient.findMany({
-        where: { dripCampaignId: id, status: "failed" },
-        select: { id: true },
-      });
-      for (const row of failed) {
-        await prisma.dripRecipient.update({
-          where: { id: row.id },
-          data: { status: "pending", error: null },
-        });
-      }
+      // Avoid updateMany — Neon HTTP wraps it in an unsupported transaction.
+      await prisma.$executeRaw`
+        UPDATE "DripRecipient"
+        SET status = ${"pending"}, error = NULL
+        WHERE "dripCampaignId" = ${id} AND status = ${"failed"}
+      `;
       if (existing.status === "completed") {
         data.status = "paused";
       }

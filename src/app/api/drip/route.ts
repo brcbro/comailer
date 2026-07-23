@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { parseRecipientsText } from "@/lib/parse-recipients";
 import { requireSession } from "@/lib/auth";
@@ -9,6 +10,28 @@ import {
   tenantErrorResponse,
 } from "@/lib/tenant";
 import { assertOrgCanSend } from "@/lib/assert-org-access";
+
+/** Neon HTTP rejects Prisma createMany (it starts an internal transaction). */
+async function insertDripRecipients(
+  dripCampaignId: string,
+  list: { email: string; name?: string | null }[]
+) {
+  const BATCH = 200;
+  for (let i = 0; i < list.length; i += BATCH) {
+    const slice = list.slice(i, i + BATCH);
+    const rows = slice.map((r, idx) => {
+      const email = String(r.email).trim().toLowerCase();
+      const name = r.name ? String(r.name) : null;
+      const position = i + idx;
+      const id = crypto.randomUUID();
+      return Prisma.sql`(${id}, ${dripCampaignId}, ${email}, ${name}, ${position}, ${"pending"}, NOW())`;
+    });
+    await prisma.$executeRaw`
+      INSERT INTO "DripRecipient" ("id", "dripCampaignId", "email", "name", "position", "status", "createdAt")
+      VALUES ${Prisma.join(rows)}
+    `;
+  }
+}
 
 export async function GET(request: Request) {
   try {
@@ -138,19 +161,7 @@ export async function POST(request: Request) {
       },
     });
 
-    const BATCH = 500;
-    for (let i = 0; i < list.length; i += BATCH) {
-      const slice = list.slice(i, i + BATCH);
-      await prisma.dripRecipient.createMany({
-        data: slice.map((r: { email: string; name?: string }, idx: number) => ({
-          dripCampaignId: campaign.id,
-          email: String(r.email).trim().toLowerCase(),
-          name: r.name || null,
-          position: i + idx,
-          status: "pending",
-        })),
-      });
-    }
+    await insertDripRecipients(campaign.id, list);
 
     const full = await prisma.dripCampaign.findUnique({
       where: { id: campaign.id },
