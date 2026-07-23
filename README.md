@@ -38,7 +38,7 @@ cp .env.example .env
 
 Ensure `.env` contains:
 - `DATABASE_URL`: `"file:./dev.db"`
-- `APP_URL`: **Must be a public HTTPS URL** for open/click tracking to work (Gmail and other clients cannot reach `localhost`). Examples: `https://mailer.yourdomain.com` or a tunnel like `https://xxxx.ngrok-free.app`. Localhost only works for dashboard UI — not for real tracking.
+- `APP_URL`: **Must be a public HTTPS URL** for open/click tracking to work (Gmail and other clients cannot reach `localhost`). Production: `https://comailer.cohortix.in`. Local dev can use `http://localhost:3000` for the dashboard only — tracking pixels/links need a public URL.
 - `ENCRYPTION_KEY`: A 64-character hex string (32 bytes) for AES-256 credential encryption.
 - `SESSION_SECRET`: Secret key for HMAC cookie signing.
 - `ADMIN_PASSWORD`: Password required to sign into the dashboard (default: `changeme`).

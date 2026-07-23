@@ -13,5 +13,5 @@ foreach ($line in $lines) {
   }
 }
 
-Write-Host "Done. Update APP_URL to https://mailer.<your-subdomain>.workers.dev then run:"
-Write-Host "  echo 'https://mailer.YOUR-SUBDOMAIN.workers.dev' | npx wrangler secret put APP_URL"
+Write-Host "Done. Production APP_URL:"
+Write-Host "  echo 'https://comailer.cohortix.in' | npx wrangler secret put APP_URL"

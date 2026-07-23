@@ -1,6 +1,8 @@
 # Deploy to Cloudflare Workers (OpenNext)
 
-Production URL: **https://mailer.bhavy.workers.dev**
+Production URL: **https://comailer.cohortix.in**
+
+Workers URL (fallback): `https://mailer.bhavy.workers.dev`
 
 ## Quick deploy (Windows)
 
@@ -16,7 +18,7 @@ npx wrangler deploy
 
 ```bash
 npx wrangler secret put DATABASE_URL
-npx wrangler secret put APP_URL          # https://mailer.bhavy.workers.dev
+npx wrangler secret put APP_URL          # https://comailer.cohortix.in
 npx wrangler secret put ENCRYPTION_KEY
 npx wrangler secret put SESSION_SECRET
 npx wrangler secret put ADMIN_PASSWORD
@@ -34,7 +36,7 @@ npm run db:migrate
 ## Verify
 
 ```bash
-curl https://mailer.bhavy.workers.dev/api/health
+curl https://comailer.cohortix.in/api/health
 # {"ok":true,"database":"connected",...}
 ```
 

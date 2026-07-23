@@ -2,6 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "mailer",
   "main": ".open-next/worker.js",
+  "workers_dev": true,
   "compatibility_date": "2024-09-23",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
@@ -10,5 +11,11 @@
   },
   "triggers": {
     "crons": ["* * * * *"]
-  }
+  },
+  "routes": [
+    {
+      "pattern": "comailer.cohortix.in",
+      "custom_domain": true
+    }
+  ]
 }
