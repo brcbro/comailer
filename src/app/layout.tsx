@@ -21,6 +21,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Comailer - CohortIX mail suit",
   description: "Self-hosted ZeptoMail mailer & tracking dashboard",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -34,6 +39,8 @@ export default function RootLayout({
       className={`${literata.variable} ${nunitoSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <link rel="icon" type="image/png" href="/logo.png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"

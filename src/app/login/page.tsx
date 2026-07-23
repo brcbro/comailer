@@ -46,11 +46,11 @@ export default function LoginPage() {
 
       <main className="w-full max-w-md animate-fade-in-up">
         <div className="text-center mb-8 space-y-2">
-          <div className="inline-flex items-center justify-center p-3.5 bg-primary/10 rounded-2xl mb-2 overflow-hidden">
+          <div className="inline-flex items-center justify-center size-16 bg-primary/10 rounded-2xl mb-2 overflow-hidden">
             <img
               src="/logo.png"
               alt="Comailer"
-              className="size-10 object-contain"
+              className="size-16 object-cover scale-150"
             />
           </div>
           <h1 className="font-headline text-4xl font-bold tracking-tight text-primary">

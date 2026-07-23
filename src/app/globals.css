@@ -8,19 +8,19 @@
   --font-sans: var(--font-body), 'Nunito Sans', sans-serif;
   --font-mono: var(--font-mono), monospace;
 
-  --color-primary: #4a7c59;
-  --color-primary-container: #78a886;
-  --color-primary-fixed: #c8e8d0;
-  --color-primary-fixed-dim: #8ecf9e;
+  --color-primary: #111111;
+  --color-primary-container: #e8e8e8;
+  --color-primary-fixed: #f0f0f0;
+  --color-primary-fixed-dim: #c8c8c8;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #d8f0de;
+  --color-on-primary-container: #1a1a1a;
 
-  --color-secondary: #6b6358;
-  --color-secondary-container: #f0e8db;
-  --color-on-secondary-container: #5e5548;
+  --color-secondary: #3a3a3a;
+  --color-secondary-container: #ececec;
+  --color-on-secondary-container: #1f1f1f;
 
-  --color-tertiary: #705c30;
-  --color-tertiary-container: #c4a66a;
+  --color-tertiary: #4a4a4a;
+  --color-tertiary-container: #d4d4d4;
 
   --color-background: var(--bg-main);
   --color-on-background: var(--text-main);
@@ -35,8 +35,8 @@
   --color-on-surface: var(--text-main);
   --color-on-surface-variant: var(--text-muted);
 
-  --color-outline: #74796e;
-  --color-outline-variant: #c4c8bc;
+  --color-outline: #6b6b6b;
+  --color-outline-variant: #d0d0d0;
 
   --color-error: #b83230;
   --color-error-container: #ffdad8;
@@ -50,8 +50,8 @@
 
 :root {
   --bg-main: #faf6f0;
-  --text-main: #2e3230;
-  --text-muted: #4a4e4a;
+  --text-main: #111111;
+  --text-muted: #4a4a4a;
   --bg-surface: #faf6f0;
   --bg-surface-container: #f0ece4;
   --bg-surface-container-low: #f5f1ea;
@@ -59,17 +59,17 @@
   --bg-surface-container-highest: #e4e0d8;
   --bg-surface-container-lowest: #ffffff;
   --bg-surface-variant: #e4e0d8;
-  --outline-variant: #c4c8bc;
-  --theme-primary: #4a7c59;
-  --scrollbar-thumb: #b8c9be;
-  --scrollbar-thumb-hover: #4a7c59;
+  --outline-variant: #d0d0d0;
+  --theme-primary: #111111;
+  --scrollbar-thumb: #c4c4c4;
+  --scrollbar-thumb-hover: #111111;
   --scrollbar-track: #f5f1ea;
 }
 
 .dark {
   --bg-main: #121413;
-  --text-main: #e2e4e1;
-  --text-muted: #b8bcba;
+  --text-main: #f2f2f2;
+  --text-muted: #b8b8b8;
   --bg-surface: #121413;
   --bg-surface-container: #242826;
   --bg-surface-container-low: #1e211f;
@@ -78,9 +78,9 @@
   --bg-surface-container-lowest: #161918;
   --bg-surface-variant: #2d312f;
   --outline-variant: #3d423f;
-  --theme-primary: #8ecf9e;
-  --scrollbar-thumb: #3d5247;
-  --scrollbar-thumb-hover: #8ecf9e;
+  --theme-primary: #f2f2f2;
+  --scrollbar-thumb: #3d3d3d;
+  --scrollbar-thumb-hover: #f2f2f2;
   --scrollbar-track: #1e211f;
 }
 
