@@ -1,17 +1,22 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
+
+const AnalyticsActivityChart = dynamic(
+  () => import("@/components/analytics-activity-chart"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-64 flex items-center justify-center text-on-surface-variant text-xs gap-2">
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        Loading chart…
+      </div>
+    ),
+  }
+);
 
 interface CampaignStat {
   id: string;
@@ -213,27 +218,7 @@ export default function SmtpAnalyticsPage({
           <span>Recent Activity (Opens vs Clicks)</span>
         </h3>
 
-        <div className="h-64 w-full pt-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e4e0d8" />
-              <XAxis dataKey="date" stroke="#74796e" fontSize={11} />
-              <YAxis stroke="#74796e" fontSize={11} allowDecimals={false} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#faf6f0",
-                  borderColor: "#c4c8bc",
-                  borderRadius: "12px",
-                  color: "#2e3230",
-                  fontSize: "12px",
-                  fontWeight: "bold",
-                }}
-              />
-              <Bar dataKey="opens" name="Opens" fill="#4a7c59" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="clicks" name="Clicks" fill="#705c30" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <AnalyticsActivityChart data={chartData} />
       </div>
 
       {/* Campaign Performance Table */}

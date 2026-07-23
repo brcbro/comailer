@@ -4,10 +4,12 @@ import { useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import {
   countRecipientsInText,
-  parseRecipientsFile,
-  RECIPIENT_FILE_ACCEPT,
   recipientsToText,
 } from "@/lib/parse-recipients";
+import {
+  parseRecipientsFile,
+  RECIPIENT_FILE_ACCEPT,
+} from "@/lib/parse-recipients-file";
 
 interface RecipientImportProps {
   value: string;

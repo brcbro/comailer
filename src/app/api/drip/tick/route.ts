@@ -1,8 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { runDripTick } from "@/lib/drip-worker";
 
-/** Manual / external-cron tick — also runs automatically via instrumentation worker. */
-export async function POST() {
+function isAuthorized(request: NextRequest): boolean {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) return true;
+  const auth = request.headers.get("authorization");
+  return auth === `Bearer ${cronSecret}`;
+}
+
+/** Cloudflare cron (via worker scheduled) or manual trigger with Bearer CRON_SECRET. */
+export async function POST(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const result = await runDripTick();
     return NextResponse.json({ success: true, ...result });

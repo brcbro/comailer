@@ -1,38 +1,49 @@
+import { cache } from "react";
 import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
-import { Pool, neonConfig } from "@neondatabase/serverless";
+import { PrismaNeonHTTP } from "@prisma/adapter-neon";
 
-// Safely set webSocketConstructor in Node environments where global WebSocket is missing
-if (typeof window === "undefined" && typeof WebSocket === "undefined") {
-  try {
-    neonConfig.webSocketConstructor = require("ws");
-  } catch {
-    // Ignore in edge/serverless environments where global WebSocket exists natively
-  }
+export function getConnectionString(): string {
+  return (process.env.DATABASE_URL || "")
+    .trim()
+    .replace(/^["']|["']$/g, "");
 }
-
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
 
 function createPrismaClient() {
-  const connectionString = (process.env.DATABASE_URL || "").trim().replace(/^["']|["']$/g, "");
+  const connectionString = getConnectionString();
 
-  if (
-    connectionString &&
-    (connectionString.startsWith("postgres://") ||
-      connectionString.startsWith("postgresql://"))
-  ) {
-    const pool = new Pool({ connectionString });
-    const adapter = new PrismaNeon(pool as any);
-    return new PrismaClient({ adapter });
+  if (!connectionString) {
+    throw new Error(
+      "DATABASE_URL is not set. Add your Neon PostgreSQL URL as a Wrangler secret (wrangler secret put DATABASE_URL)."
+    );
   }
 
-  return new PrismaClient();
+  if (
+    !connectionString.startsWith("postgres://") &&
+    !connectionString.startsWith("postgresql://")
+  ) {
+    throw new Error(
+      "DATABASE_URL must be a PostgreSQL connection string (postgresql://...) for production."
+    );
+  }
+
+  // HTTP driver — works on Cloudflare Workers without WebSocket/pg Pool.
+  const adapter = new PrismaNeonHTTP(connectionString, {
+    arrayMode: false,
+    fullResults: false,
+  });
+  return new PrismaClient({ adapter });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+/** One Prisma client per request — required on Cloudflare Workers (no global pool reuse). */
+export const getPrisma = cache(createPrismaClient);
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+/** Backward-compatible export; delegates to the per-request cached client. */
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const client = getPrisma();
+    const value = (client as unknown as Record<string | symbol, unknown>)[prop];
+    return typeof value === "function"
+      ? (value as (...args: unknown[]) => unknown).bind(client)
+      : value;
+  },
+});

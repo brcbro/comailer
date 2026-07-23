@@ -13,7 +13,9 @@ const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 days
 export const sessionCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
+  secure:
+    process.env.NODE_ENV === "production" ||
+    (process.env.APP_URL || "").startsWith("https://"),
   path: "/",
   maxAge: SESSION_TTL_SECONDS,
 };

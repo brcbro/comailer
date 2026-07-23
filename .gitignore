@@ -50,6 +50,10 @@ shadcn_add_log.txt
 # vercel
 .vercel
 
+# cloudflare / opennext build output
+.open-next/
+.wrangler/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

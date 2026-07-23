@@ -1,7 +1,13 @@
 import type { NextConfig } from "next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["@prisma/client", ".prisma/client"],
+  experimental: {
+    optimizePackageImports: ["lucide-react", "recharts"],
+  },
 };
 
 export default nextConfig;
+
+initOpenNextCloudflareForDev();
