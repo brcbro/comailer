@@ -676,8 +676,9 @@ export default function SmtpPage() {
       </AppModal>
 
       {/* Manage Senders Drawer/Modal */}
+      {activeSenderConfig && (
       <AppModal
-        open={Boolean(activeSenderConfig)}
+        open
         onClose={() => setActiveSenderConfig(null)}
         maxWidth="max-w-md"
         panelClassName="p-6 space-y-6"
@@ -770,6 +771,7 @@ export default function SmtpPage() {
               )}
             </div>
       </AppModal>
+      )}
     </div>
   );
 }
