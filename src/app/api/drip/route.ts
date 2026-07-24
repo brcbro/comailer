@@ -43,7 +43,10 @@ export async function GET(request: Request) {
             _count: { _all: true },
           });
 
-    const byCampaign = new Map<string, { pending: number; sent: number; failed: number }>();
+    const byCampaign = new Map<
+      string,
+      { pending: number; sent: number; failed: number; lastError?: string | null }
+    >();
     for (const row of statusRows) {
       const cur = byCampaign.get(row.dripCampaignId) || {
         pending: 0,
@@ -56,6 +59,26 @@ export async function GET(request: Request) {
       byCampaign.set(row.dripCampaignId, cur);
     }
 
+    const failedIds = [...byCampaign.entries()]
+      .filter(([, s]) => s.failed > 0)
+      .map(([id]) => id);
+    if (failedIds.length > 0) {
+      const samples = await prisma.dripRecipient.findMany({
+        where: {
+          dripCampaignId: { in: failedIds },
+          status: "failed",
+          error: { not: null },
+        },
+        orderBy: [{ dripCampaignId: "asc" }, { createdAt: "desc" }],
+        distinct: ["dripCampaignId"],
+        select: { dripCampaignId: true, error: true },
+      });
+      for (const s of samples) {
+        const cur = byCampaign.get(s.dripCampaignId);
+        if (cur) cur.lastError = s.error;
+      }
+    }
+
     const withStats = campaigns.map((c) => {
       const s = byCampaign.get(c.id) || { pending: 0, sent: 0, failed: 0 };
       return {
@@ -65,6 +88,7 @@ export async function GET(request: Request) {
           pending: s.pending,
           sent: s.sent,
           failed: s.failed,
+          lastError: s.lastError || null,
         },
       };
     });

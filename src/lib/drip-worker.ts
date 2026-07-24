@@ -228,6 +228,19 @@ async function processOneDrip(dripId: string) {
       if (/too many subrequests/i.test(message) || /Worker invocation/i.test(message)) {
         break;
       }
+      // ZeptoMail trial / account send caps — pause so the UI doesn't look "stuck running".
+      if (
+        /SM_133/i.test(message) ||
+        /trial mail sending limit/i.test(message) ||
+        /sending limit exceeded/i.test(message) ||
+        /email sending limit/i.test(message)
+      ) {
+        await prisma.dripCampaign.update({
+          where: { id: drip.id },
+          data: { status: "paused" },
+        });
+        break;
+      }
     }
 
     await sleep(SEND_DELAY_MS);

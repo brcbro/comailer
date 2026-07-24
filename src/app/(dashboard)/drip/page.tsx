@@ -42,7 +42,13 @@ interface DripCampaign {
   smtpConfig: { id: string; name: string; domain: string };
   sender: { id: string; email: string; displayName?: string | null };
   template?: { id: string; name: string } | null;
-  stats: { total: number; pending: number; sent: number; failed: number };
+  stats: {
+    total: number;
+    pending: number;
+    sent: number;
+    failed: number;
+    lastError?: string | null;
+  };
 }
 
 export default function DripPage() {
@@ -441,6 +447,14 @@ export default function DripPage() {
                       <p className="text-xs text-error font-medium mt-1">
                         No recipients were imported. Delete this campaign and create a new one
                         (recipient save failed on an older deploy).
+                      </p>
+                    )}
+                    {c.stats.failed > 0 && c.stats.lastError && (
+                      <p className="text-xs text-error font-medium mt-1 max-w-xl">
+                        Send error: {c.stats.lastError}
+                        {/SM_133|trial mail sending limit/i.test(c.stats.lastError)
+                          ? " — Upgrade your ZeptoMail plan or wait for the trial limit to reset, then click Retry failed."
+                          : " — Fix the issue, then click Retry failed."}
                       </p>
                     )}
                   </div>
