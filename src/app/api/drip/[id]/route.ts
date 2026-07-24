@@ -98,6 +98,34 @@ export async function PATCH(
       data.name = body.name.trim();
     }
 
+    // Mid-campaign content change — applies to all still-pending recipients.
+    if (typeof body.subject === "string" && body.subject.trim()) {
+      data.subject = body.subject.trim();
+    }
+    if (typeof body.body === "string" && body.body.trim()) {
+      data.body = body.body;
+    }
+    if (body.bodyType === "HTML" || body.bodyType === "TEXT") {
+      data.bodyType = body.bodyType;
+    }
+    if (body.templateId === null || body.templateId === "") {
+      data.templateId = null;
+    } else if (typeof body.templateId === "string") {
+      const tpl = await prisma.template.findFirst({
+        where: { id: body.templateId, organizationId: existing.organizationId },
+      });
+      if (!tpl) {
+        return NextResponse.json({ error: "Template not found" }, { status: 400 });
+      }
+      data.templateId = tpl.id;
+      // Applying a template fills subject/body unless the client already overrode them.
+      if (data.subject === undefined) data.subject = tpl.subject;
+      if (data.body === undefined) data.body = tpl.body;
+      if (data.bodyType === undefined) {
+        data.bodyType = tpl.type === "HTML" ? "HTML" : "TEXT";
+      }
+    }
+
     if (body.status === "running" || body.status === "paused") {
       if (body.status === "running") {
         const denied = await assertOrgCanSend(existing.organizationId);
@@ -136,6 +164,24 @@ export async function PATCH(
       where: { id },
       data,
     });
+
+    // Keep linked analytics campaign content in sync for future opens/clicks views.
+    if (
+      existing.campaignId &&
+      (data.subject !== undefined || data.body !== undefined || data.bodyType !== undefined)
+    ) {
+      await prisma.campaign.update({
+        where: { id: existing.campaignId },
+        data: {
+          ...(data.subject !== undefined ? { subject: data.subject as string } : {}),
+          ...(data.body !== undefined ? { body: data.body as string } : {}),
+          ...(data.bodyType !== undefined ? { bodyType: data.bodyType as string } : {}),
+          ...(data.templateId !== undefined
+            ? { templateId: data.templateId as string | null }
+            : {}),
+        },
+      });
+    }
 
     return NextResponse.json(updated);
   } catch (err: unknown) {

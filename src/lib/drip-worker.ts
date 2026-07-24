@@ -139,10 +139,18 @@ async function processOneDrip(dripId: string) {
   let sentThisTick = 0;
 
   for (const item of queue) {
-    // Re-check pause / daily cap mid-batch
+    // Re-check pause / daily cap / content mid-batch (allows mid-campaign template edits).
     const fresh = await prisma.dripCampaign.findUnique({
       where: { id: drip.id },
-      select: { status: true, sentToday: true, dailyLimit: true, dayKey: true },
+      select: {
+        status: true,
+        sentToday: true,
+        dailyLimit: true,
+        dayKey: true,
+        subject: true,
+        body: true,
+        bodyType: true,
+      },
     });
     if (!fresh || fresh.status !== "running") break;
 
@@ -168,11 +176,11 @@ async function processOneDrip(dripId: string) {
       });
 
       const rec = { email: item.email, name: item.name };
-      const personalizedSubject = personalize(drip.subject, rec);
-      const personalizedBody = personalize(drip.body, rec);
+      const personalizedSubject = personalize(fresh.subject, rec);
+      const personalizedBody = personalize(fresh.body, rec);
       const trackedBody = prepareTrackedBody(
         personalizedBody,
-        drip.bodyType === "HTML" ? "HTML" : "TEXT",
+        fresh.bodyType === "HTML" ? "HTML" : "TEXT",
         trackedRecipient.trackingId
       );
 
@@ -184,7 +192,7 @@ async function processOneDrip(dripId: string) {
         toName: item.name,
         subject: personalizedSubject,
         body: trackedBody,
-        bodyType: drip.bodyType === "HTML" ? "HTML" : "TEXT",
+        bodyType: fresh.bodyType === "HTML" ? "HTML" : "TEXT",
       });
 
       await prisma.recipient.update({

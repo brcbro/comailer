@@ -37,8 +37,11 @@ interface DripCampaign {
   dayKey: string;
   subject: string;
   bodyType: string;
+  body?: string;
+  templateId?: string | null;
   smtpConfig: { id: string; name: string; domain: string };
   sender: { id: string; email: string; displayName?: string | null };
+  template?: { id: string; name: string } | null;
   stats: { total: number; pending: number; sent: number; failed: number };
 }
 
@@ -65,6 +68,15 @@ export default function DripPage() {
   });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    templateId: "",
+    subject: "",
+    bodyType: "HTML" as "HTML" | "TEXT",
+    body: "",
+  });
+  const [editError, setEditError] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -194,6 +206,76 @@ export default function DripPage() {
       alert(err instanceof Error ? err.message : "Failed");
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function openEditContent(c: DripCampaign) {
+    setEditError("");
+    setEditingId(c.id);
+    setEditForm({
+      templateId: c.templateId || "",
+      subject: c.subject || "",
+      bodyType: c.bodyType === "TEXT" ? "TEXT" : "HTML",
+      body: c.body || "",
+    });
+    // List payload may omit body for size — load full campaign if needed.
+    if (!c.body) {
+      try {
+        const res = await fetch(`/api/drip/${c.id}`);
+        if (res.ok) {
+          const full = await res.json();
+          setEditForm({
+            templateId: full.templateId || "",
+            subject: full.subject || "",
+            bodyType: full.bodyType === "TEXT" ? "TEXT" : "HTML",
+            body: full.body || "",
+          });
+        }
+      } catch {
+        /* keep list values */
+      }
+    }
+  }
+
+  function applyEditTemplate(tplId: string) {
+    const tpl = templates.find((t) => t.id === tplId);
+    setEditForm((f) => ({
+      ...f,
+      templateId: tplId,
+      subject: tpl?.subject || f.subject,
+      bodyType: tpl?.type || f.bodyType,
+      body: tpl?.body || f.body,
+    }));
+  }
+
+  async function saveEditContent(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingId) return;
+    if (!editForm.subject.trim() || !editForm.body.trim()) {
+      setEditError("Subject and body are required.");
+      return;
+    }
+    setSavingEdit(true);
+    setEditError("");
+    try {
+      const res = await fetch(`/api/drip/${editingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          templateId: editForm.templateId || null,
+          subject: editForm.subject,
+          bodyType: editForm.bodyType,
+          body: editForm.body,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Update failed");
+      setEditingId(null);
+      await load();
+    } catch (err: unknown) {
+      setEditError(err instanceof Error ? err.message : "Update failed");
+    } finally {
+      setSavingEdit(false);
     }
   }
 
@@ -353,6 +435,7 @@ export default function DripPage() {
                     </div>
                     <p className="text-xs text-on-surface-variant font-mono">
                       {c.smtpConfig.name} · from {c.sender.email} · {c.subject}
+                      {c.template?.name ? ` · template: ${c.template.name}` : ""}
                     </p>
                     {c.stats.total === 0 && (
                       <p className="text-xs text-error font-medium mt-1">
@@ -363,6 +446,19 @@ export default function DripPage() {
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
+                    {c.status !== "completed" && (
+                      <button
+                        type="button"
+                        disabled={busyId === c.id}
+                        onClick={() => openEditContent(c)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/20 cursor-pointer"
+                        title="Change subject/body for remaining recipients"
+                      >
+                        <span className="material-symbols-outlined text-base">edit_note</span>
+                        <span>Edit content</span>
+                      </button>
+                    )}
+
                     {c.status !== "completed" && (
                       <button
                         type="button"
@@ -708,6 +804,131 @@ export default function DripPage() {
                 </button>
               </div>
             </form>
+      </AppModal>
+
+      {/* Edit content mid-campaign */}
+      <AppModal
+        open={!!editingId}
+        onClose={() => {
+          setEditingId(null);
+          setEditError("");
+        }}
+        maxWidth="max-w-2xl"
+        panelClassName="max-h-[min(calc(100vh-4rem),900px)] flex flex-col"
+      >
+        <div className="flex items-center justify-between border-b border-outline-variant/20 px-6 py-4 shrink-0">
+          <div>
+            <h2 className="text-2xl font-headline font-bold text-on-surface">
+              Edit campaign content
+            </h2>
+            <p className="text-xs text-on-surface-variant mt-1">
+              Changes apply to pending recipients only. Already-sent emails are unchanged.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setEditingId(null);
+              setEditError("");
+            }}
+            className="text-on-surface-variant hover:text-on-surface cursor-pointer p-1 rounded-lg hover:bg-surface-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-2xl">close</span>
+          </button>
+        </div>
+
+        <form onSubmit={saveEditContent} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 overflow-y-auto scrollbar-theme px-6 py-5 space-y-4 text-xs">
+            {editError && (
+              <div className="p-3 rounded-xl bg-error-container/50 border border-error/20 text-error text-xs font-medium">
+                {editError}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="font-bold text-on-surface-variant uppercase tracking-wider block">
+                Load from template
+              </label>
+              <select
+                value={editForm.templateId}
+                onChange={(e) => applyEditTemplate(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-surface-container border border-outline-variant/30 rounded-xl text-on-surface text-xs focus:outline-none focus:border-primary"
+              >
+                <option value="">Keep / custom</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-bold text-on-surface-variant uppercase tracking-wider block">
+                Subject Line
+              </label>
+              <input
+                required
+                value={editForm.subject}
+                onChange={(e) => setEditForm({ ...editForm, subject: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-surface-container border border-outline-variant/30 rounded-xl text-on-surface text-xs focus:outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-bold text-on-surface-variant uppercase tracking-wider block">
+                Type
+              </label>
+              <select
+                value={editForm.bodyType}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    bodyType: e.target.value as "HTML" | "TEXT",
+                  })
+                }
+                className="w-full px-3.5 py-2.5 bg-surface-container border border-outline-variant/30 rounded-xl text-on-surface text-xs focus:outline-none focus:border-primary"
+              >
+                <option value="HTML">HTML</option>
+                <option value="TEXT">TEXT</option>
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-bold text-on-surface-variant uppercase tracking-wider block">
+                Body Content
+              </label>
+              <textarea
+                required
+                rows={10}
+                value={editForm.body}
+                onChange={(e) => setEditForm({ ...editForm, body: e.target.value })}
+                className="w-full p-3.5 bg-surface-container border border-outline-variant/30 rounded-2xl text-on-surface font-mono text-xs focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 leading-relaxed resize-y min-h-[180px] max-h-[360px] scrollbar-theme"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-outline-variant/20 bg-surface-container-lowest shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setEditingId(null);
+                setEditError("");
+              }}
+              className="px-4 py-2.5 bg-surface-container hover:bg-surface-container-high text-on-surface-variant rounded-xl font-bold cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={savingEdit}
+              className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-bold inline-flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+            >
+              {savingEdit && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>Save for remaining sends</span>
+            </button>
+          </div>
+        </form>
       </AppModal>
     </div>
   );
