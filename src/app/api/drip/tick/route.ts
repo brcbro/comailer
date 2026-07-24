@@ -1,16 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runDripTick } from "@/lib/drip-worker";
+import { getSession } from "@/lib/auth";
 
-function isAuthorized(request: NextRequest): boolean {
+async function isAuthorized(request: NextRequest): Promise<boolean> {
   const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) return true;
   const auth = request.headers.get("authorization");
-  return auth === `Bearer ${cronSecret}`;
+  if (cronSecret && auth === `Bearer ${cronSecret}`) return true;
+  // Manual "Send now" from the dashboard (logged-in user).
+  const session = await getSession();
+  if (session) return true;
+  // Local/dev without CRON_SECRET.
+  if (!cronSecret) return true;
+  return false;
 }
 
-/** Cloudflare cron (via worker scheduled) or manual trigger with Bearer CRON_SECRET. */
+/** Cloudflare cron (via worker scheduled) or manual trigger while logged in. */
 export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) {
+  if (!(await isAuthorized(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

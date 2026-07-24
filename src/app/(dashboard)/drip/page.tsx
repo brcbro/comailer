@@ -148,9 +148,30 @@ export default function DripPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Update failed");
+      if (status === "running") {
+        // Kick the worker immediately so sends don't wait up to 60s for cron.
+        await fetch("/api/drip/tick", { method: "POST" }).catch(() => null);
+      }
       await load();
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function runTickNow() {
+    setBusyId("tick");
+    try {
+      const res = await fetch("/api/drip/tick", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Tick failed");
+      await load();
+      alert(
+        `Sent ${data.processed ?? 0} email(s) across ${data.campaigns ?? 0} running campaign(s).`
+      );
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Tick failed");
     } finally {
       setBusyId(null);
     }
@@ -234,14 +255,30 @@ export default function DripPage() {
             Import large recipient lists, toggle automated background sending, and throttle daily send limits.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowCreate(true)}
-          className="px-5 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-md hover:bg-primary/90 transition-all flex items-center gap-2 cursor-pointer w-fit"
-        >
-          <span className="material-symbols-outlined text-lg">add</span>
-          <span>New Drip Campaign</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowCreate(true)}
+            className="px-5 py-3 bg-primary text-on-primary rounded-xl text-sm font-bold shadow-md hover:bg-primary/90 transition-all flex items-center gap-2 cursor-pointer w-fit"
+          >
+            <span className="material-symbols-outlined text-lg">add</span>
+            <span>New Drip Campaign</span>
+          </button>
+          <button
+            type="button"
+            disabled={busyId === "tick"}
+            onClick={() => runTickNow()}
+            className="px-5 py-3 bg-surface-container-high text-on-surface rounded-xl text-sm font-bold border border-outline-variant/30 hover:bg-surface-container transition-all flex items-center gap-2 cursor-pointer w-fit disabled:opacity-50"
+            title="Manually send the next batch for all running campaigns"
+          >
+            {busyId === "tick" ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined text-lg">play_circle</span>
+            )}
+            <span>Send now</span>
+          </button>
+        </div>
       </section>
 
       {/* Info Banner */}

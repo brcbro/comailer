@@ -4,7 +4,9 @@ import { personalize, prepareTrackedBody } from "@/lib/tracking";
 import { isAccessExpired } from "@/lib/access";
 
 const TICK_MS = 60_000; // every minute
-const SEND_DELAY_MS = 800; // spacing within a batch
+const SEND_DELAY_MS = 400; // spacing within a batch
+/** Cap per tick to stay under Cloudflare free-plan subrequest limits (~50). */
+const MAX_SENDS_PER_TICK = 5;
 
 let started = false;
 let ticking = false;
@@ -93,7 +95,7 @@ async function processOneDrip(dripId: string) {
   const remainingToday = Math.max(0, drip.dailyLimit - sentToday);
   if (remainingToday === 0) return;
 
-  const take = Math.min(drip.batchSize, remainingToday);
+  const take = Math.min(drip.batchSize, remainingToday, MAX_SENDS_PER_TICK);
   const queue = await prisma.dripRecipient.findMany({
     where: { dripCampaignId: drip.id, status: "pending" },
     orderBy: { position: "asc" },
@@ -146,6 +148,11 @@ async function processOneDrip(dripId: string) {
 
     let currentSent = fresh.sentToday;
     if (fresh.dayKey !== key) {
+      // Day flipped mid-batch — reset counter in DB (don't only fix the local var).
+      await prisma.dripCampaign.update({
+        where: { id: drip.id },
+        data: { sentToday: 0, dayKey: key },
+      });
       currentSent = 0;
     }
     if (currentSent >= fresh.dailyLimit) break;
@@ -193,13 +200,14 @@ async function processOneDrip(dripId: string) {
           error: null,
         },
       });
-      await prisma.dripCampaign.update({
-        where: { id: drip.id },
-        data: {
-          sentToday: { increment: 1 },
-          dayKey: key,
-        },
-      });
+      // Atomic day-aware increment (avoids carrying yesterday's sentToday into today).
+      await prisma.$executeRaw`
+        UPDATE "DripCampaign"
+        SET
+          "sentToday" = CASE WHEN "dayKey" = ${key} THEN "sentToday" + 1 ELSE 1 END,
+          "dayKey" = ${key}
+        WHERE id = ${drip.id}
+      `;
 
       sentThisTick++;
     } catch (err: unknown) {
@@ -208,6 +216,10 @@ async function processOneDrip(dripId: string) {
         where: { id: item.id },
         data: { status: "failed", error: message },
       });
+      // Stop the batch on infra limits so the next cron minute can continue cleanly.
+      if (/too many subrequests/i.test(message) || /Worker invocation/i.test(message)) {
+        break;
+      }
     }
 
     await sleep(SEND_DELAY_MS);
